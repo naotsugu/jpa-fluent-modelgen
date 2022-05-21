@@ -1,0 +1,2 @@
+# JPA fluent metamodel enhancer
+
