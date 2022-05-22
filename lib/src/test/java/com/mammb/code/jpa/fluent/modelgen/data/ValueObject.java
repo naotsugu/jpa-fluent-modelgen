@@ -1,6 +1,6 @@
 package com.mammb.code.jpa.fluent.modelgen.data;
 
-import javax.persistence.Embeddable;
+import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.time.LocalDate;
 

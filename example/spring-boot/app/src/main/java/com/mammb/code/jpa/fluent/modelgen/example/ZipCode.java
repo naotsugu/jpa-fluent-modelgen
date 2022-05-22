@@ -1,6 +1,6 @@
 package com.mammb.code.jpa.fluent.modelgen.example;
 
-import jakarta.persistence.Embeddable;
+import javax.persistence.Embeddable;
 import java.io.Serializable;
 
 @Embeddable
