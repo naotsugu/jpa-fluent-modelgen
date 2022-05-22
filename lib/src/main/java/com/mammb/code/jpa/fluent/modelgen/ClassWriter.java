@@ -40,6 +40,8 @@ public class ClassWriter {
 
     /**
      * Constructor.
+     * @param context the context of processing
+     * @param entity the representation of static metamodel
      */
     protected ClassWriter(Context context, StaticMetamodelEntity entity) {
         this.context = context;
@@ -75,7 +77,7 @@ public class ClassWriter {
                     pw.println("package " + entity.getPackageName() + ";");
                     pw.println();
                 }
-                pw.println(importes.generateImports());
+                pw.println(importes.generateImports(context.isJakarta()));
                 pw.println();
 
                 pw.println(body);
@@ -91,6 +93,10 @@ public class ClassWriter {
     }
 
 
+    /**
+     * Generate the body of class.
+     * @return the body of class
+     */
     protected StringBuilder generateBody() {
         StringBuilder sb = new StringBuilder();
         sb.append(generateClassDeclaration()).append(System.lineSeparator());
@@ -98,6 +104,10 @@ public class ClassWriter {
     }
 
 
+    /**
+     * Generate the class declaration.
+     * @return the class declaration
+     */
     protected String generateClassDeclaration() {
         StringBuilder sb = new StringBuilder();
         if (Objects.isNull(entity.getSuperClass())) {
@@ -150,6 +160,11 @@ public class ClassWriter {
     }
 
 
+    /**
+     * Generate root methods.
+     * @param attribute the static metamodel attribute
+     * @return root methods
+     */
     protected String generateRootMethod(StaticMetamodelAttribute attribute) {
 
         if (attribute.getAttributeType().isList()) {
@@ -267,6 +282,10 @@ public class ClassWriter {
     }
 
 
+    /**
+     * Generate the join class.
+     * @return generated join class
+     */
     protected String generateJoinClass() {
 
         StringBuilder sb = new StringBuilder();
@@ -300,6 +319,11 @@ public class ClassWriter {
     }
 
 
+    /**
+     * Generate join methods
+     * @param attribute attribute
+     * @return Generated join methods
+     */
     protected String generateJoinMethod(StaticMetamodelAttribute attribute) {
 
         if (attribute.getAttributeType().isList()) {
@@ -359,6 +383,10 @@ public class ClassWriter {
     }
 
 
+    /**
+     * Generate path class.
+     * @return Generated path class
+     */
     protected String generatePathClass() {
         StringBuilder sb = new StringBuilder();
 
@@ -391,6 +419,11 @@ public class ClassWriter {
     }
 
 
+    /**
+     * Generate path methods.
+     * @param attribute attribute
+     * @return Generated path methods
+     */
     protected String generatePathMethod(StaticMetamodelAttribute attribute) {
         if (attribute.getAttributeType().isList()) {
             return bindAttribute(attribute, """
@@ -428,6 +461,13 @@ public class ClassWriter {
 
     }
 
+
+    /**
+     * Bind attribute to template.
+     * @param attribute attribute
+     * @param template template
+     * @return Binded template
+     */
     protected String bindAttribute(StaticMetamodelAttribute attribute, String template) {
         if (attribute.getAttributeType().isMap()) {
             throw new IllegalArgumentException(attribute.getAttributeType().toString());
@@ -441,6 +481,12 @@ public class ClassWriter {
     }
 
 
+    /**
+     * Bind map attribute to template.
+     * @param attribute attribute
+     * @param template template
+     * @return Binded template
+     */
     protected String bindMapAttribute(StaticMetamodelAttribute attribute, String template) {
         if (!attribute.getAttributeType().isMap()) {
             throw new IllegalArgumentException(attribute.getAttributeType().toString());
@@ -455,6 +501,11 @@ public class ClassWriter {
     }
 
 
+    /**
+     * Capitalize the given string.
+     * @param str the given string
+     * @return Capitalized string
+     */
     protected static String capitalize(String str) {
         return (Objects.isNull(str) || str.isEmpty())
             ? str

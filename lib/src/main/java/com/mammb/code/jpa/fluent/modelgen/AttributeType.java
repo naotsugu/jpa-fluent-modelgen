@@ -44,8 +44,11 @@ public enum AttributeType {
     /** Attribute package name. */
     static final String PACKAGE_NAME = "jakarta.persistence.metamodel.";
 
-    /** Attribute FQCN. */
-    private final String fqcn;
+    /** Legacy attribute package name. */
+    static final String PACKAGE_NAME_LEGACY = "javax.persistence.metamodel.";
+
+    /** Attribute type name. */
+    private final String name;
 
 
     /**
@@ -53,7 +56,7 @@ public enum AttributeType {
      * @param name the Attribute name
      */
     AttributeType(String name) {
-        this.fqcn = PACKAGE_NAME + name;
+        this.name = name;
     }
 
 
@@ -109,7 +112,8 @@ public enum AttributeType {
      */
     public static AttributeType of(String fqcn) {
         return Arrays.stream(values())
-            .filter(e -> e.fqcn.equals(fqcn))
+            .filter(e -> fqcn.startsWith(PACKAGE_NAME) || fqcn.startsWith(PACKAGE_NAME_LEGACY))
+            .filter(e -> fqcn.replace(PACKAGE_NAME, "").replace(PACKAGE_NAME_LEGACY, "").equals(e.name))
             .findFirst()
             .orElseThrow();
     }
@@ -126,20 +130,11 @@ public enum AttributeType {
 
 
     /**
-     * Get attribute FQCN.
-     * @return the FQCN
-     */
-    public String getFqcn() {
-        return fqcn;
-    }
-
-
-    /**
      * Get attribute simple name.
      * @return the attribute simple name
      */
     public String getSimpleName() {
-        return fqcn.replace(PACKAGE_NAME, "");
+        return name;
     }
 
 }

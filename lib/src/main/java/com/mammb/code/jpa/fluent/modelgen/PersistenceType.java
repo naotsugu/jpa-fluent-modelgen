@@ -16,9 +16,7 @@
 package com.mammb.code.jpa.fluent.modelgen;
 
 import java.util.Arrays;
-import java.util.Map;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 /**
  * Persistence Type.
@@ -27,41 +25,50 @@ import java.util.stream.Collectors;
 public enum PersistenceType {
 
     /** Entity. */
-    ENTITY("jakarta.persistence.Entity"),
+    ENTITY("Entity"),
 
     /** Embeddable class. */
-    EMBEDDABLE("jakarta.persistence.Embeddable"),
+    EMBEDDABLE("Embeddable"),
 
     /** Mapped superclass. */
-    MAPPED_SUPERCLASS("jakarta.persistence.MappedSuperclass"),
+    MAPPED_SUPERCLASS("MappedSuperclass"),
 
     /** Basic type. */
     BASIC(""),
     ;
 
-    /** FQCN mapped persistence type. */
-    public static final Map<String, PersistenceType> mappedFqcn = Map.copyOf(
-        Arrays.stream(PersistenceType.values())
-            .collect(Collectors.toMap(PersistenceType::getFqcn, UnaryOperator.identity())));
+    /** Attribute package name. */
+    static final String PACKAGE_NAME = "jakarta.persistence.";
 
-    /** FQCN of Persistence Type. */
-    private final String fqcn;
+    /** Legacy attribute package name. */
+    static final String PACKAGE_NAME_LEGACY = "javax.persistence.";
+
+    /** Name of Persistence Type. */
+    private final String name;
 
 
     /**
      * private Constructor.
      */
-    PersistenceType(String fqcn) {
-        this.fqcn = fqcn;
+    PersistenceType(String name) {
+        this.name = name;
     }
 
 
     /**
-     * Get the fqcn of persistence type name.
-     * @return the fqcn of persistence type name
+     * Get the persistence type from given fqcn.
+     * @param fqcn FQCN
+     * @return the persistence type
      */
-    public String getFqcn() {
-        return fqcn;
+    public static PersistenceType of(String fqcn) {
+        if (Objects.isNull(fqcn) || fqcn.isEmpty()) {
+            return BASIC;
+        }
+        var str = fqcn.replace(PACKAGE_NAME, "").replace(PACKAGE_NAME_LEGACY, "");
+        return Arrays.stream(PersistenceType.values())
+            .filter(value -> value.name.equals(str))
+            .findFirst()
+            .orElse(BASIC);
     }
 
 }

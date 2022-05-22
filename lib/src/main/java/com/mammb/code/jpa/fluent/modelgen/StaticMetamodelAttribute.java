@@ -42,10 +42,13 @@ public class StaticMetamodelAttribute {
 
     /**
      * Constructor.
+     * @param element the static metamodel element
+     * @param types the type utility
      */
     protected StaticMetamodelAttribute(Element element, Types types) {
 
-        if (!element.asType().toString().startsWith(AttributeType.PACKAGE_NAME)) {
+        if (!element.asType().toString().startsWith(AttributeType.PACKAGE_NAME) &&
+            !element.asType().toString().startsWith(AttributeType.PACKAGE_NAME_LEGACY)) {
             throw new IllegalArgumentException("Unsupported type : " + element.asType().toString());
         }
 

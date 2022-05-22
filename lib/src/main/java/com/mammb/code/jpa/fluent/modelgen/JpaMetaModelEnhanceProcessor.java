@@ -32,7 +32,8 @@ import java.util.Set;
  * @author Naotsugu Kobayashi
  */
 @SupportedAnnotationTypes({
-    StaticMetamodelEntity.ANNOTATION_TYPE
+    StaticMetamodelEntity.ANNOTATION_TYPE,
+    StaticMetamodelEntity.ANNOTATION_TYPE_LEGACY
 })
 public class JpaMetaModelEnhanceProcessor extends AbstractProcessor {
 
@@ -65,10 +66,14 @@ public class JpaMetaModelEnhanceProcessor extends AbstractProcessor {
             return false;
         }
 
-        roundEnv.getRootElements().stream()
-            .map(this::asStaticMetamodelEntity)
-            .flatMap(Optional::stream)
-            .forEach(this::createMetaModelClasses);
+        try {
+            roundEnv.getRootElements().stream()
+                .map(this::asStaticMetamodelEntity)
+                .flatMap(Optional::stream)
+                .forEach(this::createMetaModelClasses);
+        } catch (Exception e) {
+            context.logError("Exception : " + e.getMessage());
+        }
 
         return false;
 

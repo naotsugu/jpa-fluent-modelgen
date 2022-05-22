@@ -30,15 +30,20 @@ public class ImportSentences {
     private final Map<String, String> map;
     private final String selfPackage;
 
-    public ImportSentences(String selfPackage) {
+    private ImportSentences(String selfPackage) {
         this.map = new HashMap<>();
         this.selfPackage = selfPackage;
-        initImplicit();
     }
 
+    /**
+     * Create the ImportSentences
+     * @param selfPackage the name of selfPackage
+     * @return the ImportSentences
+     */
     public static ImportSentences of(String selfPackage) {
         return new ImportSentences(selfPackage);
     }
+
 
     private void initImplicit() {
         map.put("Expression",     "jakarta.persistence.criteria.Expression");
@@ -57,12 +62,48 @@ public class ImportSentences {
         map.put("Generated",      "javax.annotation.processing.Generated");
     }
 
-    protected String generateImports() {
+
+    private void initLegacyImplicit() {
+        map.put("Expression",     "javax.persistence.criteria.Expression");
+        map.put("Root",           "javax.persistence.criteria.Root");
+        map.put("Join",           "javax.persistence.criteria.Join");
+        map.put("Path",           "javax.persistence.criteria.Path");
+        map.put("ListJoin",       "javax.persistence.criteria.ListJoin");
+        map.put("SetJoin",        "javax.persistence.criteria.SetJoin");
+        map.put("MapJoin",        "javax.persistence.criteria.MapJoin");
+        map.put("CollectionJoin", "javax.persistence.criteria.CollectionJoin");
+        map.put("List",           "java.util.List");
+        map.put("Map",            "java.util.Map");
+        map.put("Set",            "java.util.Set");
+        map.put("Collection",     "java.util.Collection");
+        map.put("Supplier",       "java.util.function.Supplier");
+        map.put("Generated",      "javax.annotation.processing.Generated");
+    }
+
+
+    /**
+     * Generate import sentences.
+     * @param jakarta jakarta
+     * @return import sentences
+     */
+    protected String generateImports(boolean jakarta) {
+        if (jakarta) {
+            initImplicit();
+        } else {
+            initLegacyImplicit();
+        }
+
         return map.values().stream().map(s -> "import " + s + ";")
             .sorted()
             .collect(Collectors.joining("\n"));
     }
 
+
+    /**
+     * Apply import.
+     * @param fqcn FQCN
+     * @return Applied import name
+     */
     public String apply(String fqcn) {
         if (Objects.isNull(fqcn) || !fqcn.contains(".")) {
             return fqcn;

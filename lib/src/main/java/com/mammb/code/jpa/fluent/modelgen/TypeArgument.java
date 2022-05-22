@@ -107,11 +107,9 @@ public class TypeArgument {
 
         return elm.getAnnotationMirrors().stream()
             .map(am -> am.getAnnotationType().toString())
-            .map(PersistenceType.mappedFqcn::get)
-            .filter(Objects::nonNull)
+            .map(PersistenceType::of)
             .findFirst()
             .orElse(PersistenceType.BASIC);
-
     }
 
 }
