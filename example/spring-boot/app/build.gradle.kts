@@ -11,7 +11,7 @@ repositories {
 dependencies {
 
     annotationProcessor("org.hibernate:hibernate-jpamodelgen:5.6.9.Final")
-    annotationProcessor("com.mammb:jpa-fluent-modelgen:0.2.0")
+    annotationProcessor("com.mammb:jpa-fluent-modelgen:0.3.0")
 
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -22,4 +22,10 @@ dependencies {
 
 tasks.named<Test>("test") {
     useJUnitPlatform()
+}
+
+configurations {
+    compileOnly {
+        extendsFrom(configurations.annotationProcessor.get())
+    }
 }

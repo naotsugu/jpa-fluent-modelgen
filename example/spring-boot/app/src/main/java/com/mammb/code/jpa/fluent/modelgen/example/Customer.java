@@ -6,6 +6,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -29,6 +30,12 @@ public class Customer implements Serializable {
         this.firstName = firstName;
         this.lastName = lastName;
         this.organizations = organizations;
+    }
+
+    public Customer(String firstName, String lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.organizations = new ArrayList<>();
     }
 
 
