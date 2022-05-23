@@ -8,6 +8,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import java.util.List;
+
 @SpringBootApplication
 public class App {
 
@@ -18,11 +20,27 @@ public class App {
     @Bean
     public CommandLineRunner demo(CustomerRepository repository) {
         return (args) -> {
-            repository.save(new Customer("Jack", "Bauer"));
-            repository.save(new Customer("Chloe", "O'Brian"));
-            repository.save(new Customer("Kim", "Bauer"));
-            repository.save(new Customer("David", "Palmer"));
-            repository.save(new Customer("Michelle", "Dessler"));
+            var customer1 = new Customer("Jack", "Bauer");
+            var customer2 = new Customer("Chloe", "O'Brian");
+            var customer3 = new Customer("David", "Palmer");
+            var customer4 = new Customer("Michelle", "Dessler");
+
+            var a1 = new Address(new ZipCode("60601"), "IL", "Chicago", "Michigan Ave", "180 North Michigan Avenue");
+            var a2 = new Address(new ZipCode("60010"), "IL", "South Barrington", "South Barrington", "100 W. Higgins Rd");
+            var a3 = new Address(new ZipCode("60062"), "IL", "Northbrook", "Northbrook East", "794 Skokie Blvd");
+
+            var organ1 = new Organization("Action Institute", a1);
+            var organ2 = new Organization("Feed The Poor", a2);
+            var organ3 = new Organization("Green Peace", a3);
+            var organ4 = new Organization("Graceful Aging Club", a3);
+            var organ5 = new Organization("Girls Inc.", a1);
+
+            customer1.getOrganizations().addAll(List.of(organ1, organ2));
+            customer2.getOrganizations().addAll(List.of(organ3));
+            customer3.getOrganizations().addAll(List.of(organ4));
+            customer4.getOrganizations().addAll(List.of(organ3, organ4, organ5));
+
+            repository.saveAll(List.of(customer1, customer2, customer3, customer4));
         };
     }
 }

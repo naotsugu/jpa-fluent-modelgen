@@ -1,5 +1,6 @@
 package com.mammb.code.jpa.fluent.modelgen.example;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -20,7 +21,7 @@ public class Customer implements Serializable {
 
     private String lastName;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     private List<Organization> organizations;
 
 
