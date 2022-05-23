@@ -34,8 +34,8 @@ tasks.named<Test>("test") {
 group = "com.mammb"
 version = "0.3.0"
 
-val sonatypeUsername: String by project
-val sonatypePassword: String by project
+val sonatypeUsername: String? by project
+val sonatypePassword: String? by project
 
 java {
     withJavadocJar()
