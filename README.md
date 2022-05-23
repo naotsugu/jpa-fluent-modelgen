@@ -100,3 +100,8 @@ public List<Customer> findByFirstNameAndOrganZip(String firstName, String code) 
         .and(CustomerSpecs.firstNameEq(firstName)));
 }
 ```
+
+See `example/spring-boot` for more details.
+
+
+
