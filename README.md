@@ -73,7 +73,8 @@ public class CustomerSpecs {
     public static Specification<Customer> organizationZipEq(String zipCode) {
         return (root, query, cb) -> {
             query.distinct(true);
-            return cb.equal(on(root).joinOrganizations().getAddress().getZipCode().getCode(), zipCode);
+            return cb.equal(on(root).joinOrganizations()
+                .getAddress().getZipCode().getCode(), zipCode);
         };
     }
 
