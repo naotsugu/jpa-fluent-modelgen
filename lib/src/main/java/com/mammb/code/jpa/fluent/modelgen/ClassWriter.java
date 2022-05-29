@@ -35,7 +35,7 @@ public class ClassWriter {
     private final StaticMetamodelEntity entity;
 
     /** Import sentences. */
-    private final ImportSentences importes;
+    private final ImportSentences imports;
 
 
     /**
@@ -46,7 +46,7 @@ public class ClassWriter {
     protected ClassWriter(Context context, StaticMetamodelEntity entity) {
         this.context = context;
         this.entity = entity;
-        this.importes = ImportSentences.of(entity.getPackageName());
+        this.imports = ImportSentences.of(entity.getPackageName());
     }
 
 
@@ -77,7 +77,7 @@ public class ClassWriter {
                     pw.println("package " + entity.getPackageName() + ";");
                     pw.println();
                 }
-                pw.println(importes.generateImports(context.isJakarta()));
+                pw.println(imports.generateImports(context.isJakarta()));
                 pw.println();
 
                 pw.println(body);
@@ -606,8 +606,8 @@ public class ClassWriter {
             throw new IllegalArgumentException(attribute.getAttributeType().toString());
         }
         return template.formatted(
-            importes.apply(attribute.getEnclosingType().getName()), // %1$s
-            importes.apply(attribute.getValueType().getName()),     // %2$s
+            imports.apply(attribute.getEnclosingType().getName()), // %1$s
+            imports.apply(attribute.getValueType().getName()),     // %2$s
             capitalize(attribute.getName()),                        // %3$s
             attribute.getName()                                     // %4$s
         );
@@ -625,9 +625,9 @@ public class ClassWriter {
             throw new IllegalArgumentException(attribute.getAttributeType().toString());
         }
         return template.formatted(
-            importes.apply(attribute.getEnclosingType().getName()), // %1$s
-            importes.apply(attribute.getKeyType().getName()),       // %2$s
-            importes.apply(attribute.getValueType().getName()),     // %3$s
+            imports.apply(attribute.getEnclosingType().getName()), // %1$s
+            imports.apply(attribute.getKeyType().getName()),       // %2$s
+            imports.apply(attribute.getValueType().getName()),     // %3$s
             capitalize(attribute.getName()),                        // %4$s
             attribute.getName()                                     // %5$s
         );
