@@ -111,9 +111,7 @@ public class RootClassWriter {
                 }
 
                 pw.println("}");
-
                 pw.flush();
-
             }
 
         } catch (Exception e) {
@@ -123,6 +121,10 @@ public class RootClassWriter {
     }
 
 
+    /**
+     * Get the generated package name.
+     * @return the generated package name
+     */
     private String createPackageName() {
         var name = modelClasses.stream()
             .reduce(modelClasses.get(0), RootClassWriter::getCommonPrefix);
@@ -139,6 +141,12 @@ public class RootClassWriter {
     }
 
 
+    /**
+     * Get the common prefix string for a given string.
+     * @param s1 the string to be compared
+     * @param s2 the string to be compared
+     * @return the common prefix string
+     */
     private static String getCommonPrefix(String s1, String s2) {
         var minLength = Math.min(s1.length(), s2.length());
         for (int i = 0; i < minLength; i++) {
@@ -148,6 +156,7 @@ public class RootClassWriter {
         }
         return s1.substring(0, minLength);
     }
+
 
     /**
      * Uncapitalize the given string.
@@ -159,4 +168,5 @@ public class RootClassWriter {
             ? str
             : str.substring(0, 1).toLowerCase() + str.substring(1);
     }
+
 }
