@@ -19,6 +19,7 @@ import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -35,7 +36,17 @@ import java.util.Set;
     StaticMetamodelEntity.ANNOTATION_TYPE,
     StaticMetamodelEntity.ANNOTATION_TYPE_LEGACY
 })
+@SupportedOptions({
+    JpaMetaModelEnhanceProcessor.DEBUG_OPTION,
+    JpaMetaModelEnhanceProcessor.ADD_ROOT_FACTORY,
+})
 public class JpaMetaModelEnhanceProcessor extends AbstractProcessor {
+
+    /** Debug option. */
+    public static final String DEBUG_OPTION = "debug";
+
+    /** Add root factory option. */
+    public static final String ADD_ROOT_FACTORY = "addRootFactory";
 
     /** Context of processing. */
     private Context context;
@@ -45,7 +56,9 @@ public class JpaMetaModelEnhanceProcessor extends AbstractProcessor {
     public void init(ProcessingEnvironment env) {
 
         super.init(env);
-        this.context = Context.of(env);
+        this.context = Context.of(env,
+            Boolean.parseBoolean(env.getOptions().getOrDefault(JpaMetaModelEnhanceProcessor.DEBUG_OPTION, "false")),
+            Boolean.parseBoolean(env.getOptions().getOrDefault(JpaMetaModelEnhanceProcessor.ADD_ROOT_FACTORY, "true")));
 
         var version = getClass().getPackage().getImplementationVersion();
         context.logInfo("JPA Static-Metamodel Enhance Generator " + (Objects.isNull(version) ? "" : version));
@@ -75,6 +88,11 @@ public class JpaMetaModelEnhanceProcessor extends AbstractProcessor {
             context.logError("Exception : " + e.getMessage());
         }
 
+        if (context.isAddRoot()) {
+            context.logDebug("Create root factory class");
+            RootClassWriter.of(context).writeFile();
+        }
+
         return false;
 
     }
@@ -95,8 +113,13 @@ public class JpaMetaModelEnhanceProcessor extends AbstractProcessor {
      * @param entity {@link StaticMetamodelEntity}
      */
     protected void createMetaModelClasses(final StaticMetamodelEntity entity) {
-        context.logDebug("Create meta model " + entity.getQualifiedName());
-        new ClassWriter(context, entity).writeFile();
+        if (context.isAlreadyGenerated(entity.getQualifiedName())) {
+            context.logDebug("Skip meta model generation : " + entity.getQualifiedName());
+            return;
+        }
+        context.logDebug("Create meta model : " + entity.getQualifiedName());
+        ClassWriter.of(context, entity).writeFile();
+        context.markGenerated(entity.getQualifiedName());
     }
 
 }

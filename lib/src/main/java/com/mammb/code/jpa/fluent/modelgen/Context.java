@@ -20,6 +20,9 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * Context of metamodel enhance process.
@@ -31,8 +34,14 @@ public class Context {
     /** Annotation processing environment. */
     private final ProcessingEnvironment pe;
 
+    /** Generated model classes holder. */
+    private final Collection<String> generatedModelClasses;
+
     /** Mode of debug. */
     private final boolean debug;
+
+    /** Add root factory option. */
+    private final boolean addRoot;
 
     /** Mode of jakarta or javax. */
     private boolean jakarta;
@@ -40,16 +49,15 @@ public class Context {
 
     /**
      * Private constructor.
-     */
-
-    /**
-     * Private constructor.
      * @param pe the annotation processing environment
      * @param debug the mode of debug
+     * @param addRoot the mode of add root factory
      */
-    protected Context(ProcessingEnvironment pe, boolean debug) {
+    protected Context(ProcessingEnvironment pe, boolean debug, boolean addRoot) {
         this.pe = pe;
+        this.generatedModelClasses = new HashSet<>();
         this.debug = debug;
+        this.addRoot = addRoot;
         this.jakarta = true;
     }
 
@@ -57,10 +65,12 @@ public class Context {
     /**
      * Create the context instance.
      * @param pe processing environment
+     * @param debug the mode of debug
+     * @param addRoot the mode of add root factory
      * @return the context
      */
-    public static Context of(ProcessingEnvironment pe) {
-        return new Context(pe, Boolean.parseBoolean(pe.getOptions().get("debug")));
+    public static Context of(ProcessingEnvironment pe, boolean debug, boolean addRoot) {
+        return new Context(pe, debug, addRoot);
     }
 
 
@@ -88,6 +98,25 @@ public class Context {
      */
     public Types getTypeUtils() {
         return pe.getTypeUtils();
+    }
+
+
+    /**
+     * Mark the given metamodel as generated.
+     * @param name the qualified name of metamodel
+     */
+    void markGenerated(String name) {
+        generatedModelClasses.add(name);
+    }
+
+
+    /**
+     * Get whether the given qualified name has already been generated.
+     * @param name the qualified name of metamodel
+     * @return {@code true} if already generated
+     */
+    boolean isAlreadyGenerated(String name) {
+        return generatedModelClasses.contains(name);
     }
 
 
@@ -120,6 +149,15 @@ public class Context {
 
 
     /**
+     * Get the option fo add root factory.
+     * @return the mode of add root factory
+     */
+    public boolean isAddRoot() {
+        return addRoot;
+    }
+
+
+    /**
      * Get jakarta
      * @return jakarta
      */
@@ -127,12 +165,22 @@ public class Context {
         return jakarta;
     }
 
+
     /**
      * Set jakarta
      * @param jakarta jakarta
      */
     public void setJakarta(boolean jakarta) {
         this.jakarta = jakarta;
+    }
+
+
+    /**
+     * Get the generated model classes.
+     * @return the generated model classes
+     */
+    public Collection<String> getGeneratedModelClasses() {
+        return List.copyOf(generatedModelClasses);
     }
 
 }
