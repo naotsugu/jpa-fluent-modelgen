@@ -96,7 +96,7 @@ public class RootClassWriter {
                 pw.println();
                 for (String metaName : modelClasses) {
                     var entityFqcn = metaName.substring(0, metaName.lastIndexOf('_'));
-                    var entitySimpleName = entityFqcn.replace(packageName + ".", "");
+                    var entitySimpleName = entityFqcn.substring(entityFqcn.lastIndexOf('.') + 1);
                     pw.println("""
                             public static %1$s_Root_ %2$s(Root<%1$s> root) {
                                 return new %1$s_Root_(root);
