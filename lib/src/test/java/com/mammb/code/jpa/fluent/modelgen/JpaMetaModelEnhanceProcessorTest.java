@@ -8,14 +8,14 @@ class JpaMetaModelEnhanceProcessorTest {
 
     @Test
     void test() {
-        var root = Root_.rootEntity(new RootImpl<>());
-        root.getName();
-        root.joinChildrenList();
-        root.getChildrenList();
-        root.joinChildrenSet();
-        root.getChildrenSet();
-        root.joinChildrenMap();
-        root.getChildrenMap();
+//        var root = Root_.rootEntity(new RootImpl<>());
+//        root.getName();
+//        root.joinChildrenList();
+//        root.getChildrenList();
+//        root.joinChildrenSet();
+//        root.getChildrenSet();
+//        root.joinChildrenMap();
+//        root.getChildrenMap();
     }
 
 }

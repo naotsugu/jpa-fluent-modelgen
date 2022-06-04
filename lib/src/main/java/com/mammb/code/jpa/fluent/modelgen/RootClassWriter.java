@@ -75,10 +75,14 @@ public class RootClassWriter {
 
                 // write import
                 pw.println("import javax.annotation.processing.Generated;");
+                pw.println("import java.util.function.BiFunction;");
+                pw.println("import java.util.function.Function;");
                 if (context.isJakarta()) {
+                    pw.println("import jakarta.persistence.criteria.CriteriaBuilder;");
                     pw.println("import jakarta.persistence.criteria.CriteriaQuery;");
                     pw.println("import jakarta.persistence.criteria.Root;");
                 } else {
+                    pw.println("import javax.persistence.criteria.CriteriaBuilder;");
                     pw.println("import javax.persistence.criteria.CriteriaQuery;");
                     pw.println("import javax.persistence.criteria.Root;");
                 }
@@ -97,17 +101,31 @@ public class RootClassWriter {
                 for (String metaName : modelClasses) {
                     var entityFqcn = metaName.substring(0, metaName.lastIndexOf('_'));
                     var entitySimpleName = entityFqcn.substring(entityFqcn.lastIndexOf('.') + 1);
-                    pw.println("""
-                            public static %1$s_Root_ %2$s(Root<%1$s> root) {
-                                return new %1$s_Root_(root);
-                            }
-                            public static %1$s_Root_ %2$s(CriteriaQuery<?> query) {
-                                return %2$s(query.from(%1$s.class));
-                            }
-                        """.formatted(
-                        entitySimpleName,
-                        uncapitalize(entitySimpleName)
-                    ));
+                    if (context.isAddCriteria()) {
+                        pw.println("""
+                                public static %1$s_Root_ %2$s(Root<%1$s> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+                                    return new %1$s_Root_(root, query, builder);
+                                }
+                                public static BiFunction<CriteriaQuery<?>, CriteriaBuilder, %1$s_Root_> %2$s() {
+                                    return (query, builder) -> new %1$s_Root_(query.from(%1$s.class), query, builder);
+                                }
+                            """.formatted(
+                                entitySimpleName,
+                                uncapitalize(entitySimpleName)
+                        ));
+                    } else {
+                        pw.println("""
+                                public static %1$s_Root_ %2$s(Root<%1$s> root) {
+                                    return new %1$s_Root_(root);
+                                }
+                                public static %1$s_Root_ %2$s(CriteriaQuery<?> query) {
+                                    return %2$s(query.from(%1$s.class));
+                                }
+                            """.formatted(
+                                entitySimpleName,
+                                uncapitalize(entitySimpleName)
+                        ));
+                    }
                 }
 
                 pw.println("}");

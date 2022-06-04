@@ -17,7 +17,6 @@ package com.mammb.code.jpa.fluent.modelgen;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.util.Types;
 import java.util.List;
 
 /**
@@ -26,6 +25,9 @@ import java.util.List;
  * @author Naotsugu Kobayashi
  */
 public class StaticMetamodelAttribute {
+
+    /** Context of processing. */
+    private final Context context;
 
     /** Static metamodel element. */
     private final Element element;
@@ -42,16 +44,17 @@ public class StaticMetamodelAttribute {
 
     /**
      * Constructor.
+     * @param context context of processing
      * @param element the static metamodel element
-     * @param types the type utility
      */
-    protected StaticMetamodelAttribute(Element element, Types types) {
+    protected StaticMetamodelAttribute(Context context, Element element) {
 
         if (!element.asType().toString().startsWith(AttributeType.PACKAGE_NAME) &&
             !element.asType().toString().startsWith(AttributeType.PACKAGE_NAME_LEGACY)) {
             throw new IllegalArgumentException("Unsupported type : " + element.asType().toString());
         }
 
+        this.context = context;
         this.element = element;
         this.name = element.getSimpleName().toString();
 
@@ -60,7 +63,7 @@ public class StaticMetamodelAttribute {
         this.attributeType = AttributeType.of(declaredType.asElement());
 
         this.typeArguments = declaredType.getTypeArguments().stream()
-            .map(t -> TypeArgument.of(t, types.asElement(t)))
+            .map(t -> TypeArgument.of(context, t))
             .toList();
 
         if (typeArguments.size() < 2) {
@@ -73,12 +76,12 @@ public class StaticMetamodelAttribute {
 
     /**
      * Create a new {@link StaticMetamodelAttribute} instance with the given entity.
+     * @param context context of processing
      * @param element the attribute element
-     * @param types the type utils
      * @return static metamodel attribute
      */
-    public static StaticMetamodelAttribute of(Element element, Types types) {
-        return new StaticMetamodelAttribute(element, types);
+    public static StaticMetamodelAttribute of(Context context, Element element) {
+        return new StaticMetamodelAttribute(context, element);
     }
 
 

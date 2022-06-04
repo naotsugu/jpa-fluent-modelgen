@@ -39,6 +39,7 @@ import java.util.Set;
 @SupportedOptions({
     JpaMetaModelEnhanceProcessor.DEBUG_OPTION,
     JpaMetaModelEnhanceProcessor.ADD_ROOT_FACTORY,
+    JpaMetaModelEnhanceProcessor.ADD_ROOT_CRITERIA,
 })
 public class JpaMetaModelEnhanceProcessor extends AbstractProcessor {
 
@@ -47,6 +48,9 @@ public class JpaMetaModelEnhanceProcessor extends AbstractProcessor {
 
     /** Add root factory option. */
     public static final String ADD_ROOT_FACTORY = "addRootFactory";
+
+    /** Add criteria option. */
+    public static final String ADD_ROOT_CRITERIA = "addCriteria";
 
     /** Context of processing. */
     private Context context;
@@ -58,7 +62,8 @@ public class JpaMetaModelEnhanceProcessor extends AbstractProcessor {
         super.init(env);
         this.context = Context.of(env,
             Boolean.parseBoolean(env.getOptions().getOrDefault(JpaMetaModelEnhanceProcessor.DEBUG_OPTION, "false")),
-            Boolean.parseBoolean(env.getOptions().getOrDefault(JpaMetaModelEnhanceProcessor.ADD_ROOT_FACTORY, "true")));
+            Boolean.parseBoolean(env.getOptions().getOrDefault(JpaMetaModelEnhanceProcessor.ADD_ROOT_FACTORY, "true")),
+            Boolean.parseBoolean(env.getOptions().getOrDefault(JpaMetaModelEnhanceProcessor.ADD_ROOT_CRITERIA, "true")));
 
         var version = getClass().getPackage().getImplementationVersion();
         context.logInfo("JPA Static-Metamodel Enhance Generator " + (Objects.isNull(version) ? "" : version));
@@ -91,6 +96,10 @@ public class JpaMetaModelEnhanceProcessor extends AbstractProcessor {
         if (context.isAddRoot()) {
             context.logDebug("Create root factory class");
             RootClassWriter.of(context).writeFile();
+        }
+        if (context.isAddCriteria()) {
+            context.logDebug("Create criteria class");
+            CriteriaClassWriter.of(context).writeFile();
         }
 
         return false;

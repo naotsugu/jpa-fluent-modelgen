@@ -78,6 +78,9 @@ public class ClassWriter {
                     pw.println();
                 }
                 pw.println(imports.generateImports(context.isJakarta()));
+                if (context.isAddCriteria()) {
+                    pw.println("import " + CriteriaClassWriter.PACKAGE + ".*;");
+                }
                 pw.println();
 
                 pw.println(body);
@@ -116,14 +119,23 @@ public class ClassWriter {
                 @Generated(value = "%1$s")
                 public class %2$sRoot_ implements Supplier<Root<? extends %3$s>> {
 
-                    private final Root<? extends %3$s> root;
-                    public %2$sRoot_(Root<? extends %3$s> root) {
+                    protected final Root<? extends %3$s> root;
+                    protected final CriteriaQuery<?> query;
+                    protected final CriteriaBuilder builder;
+                    
+                    public %2$sRoot_(Root<? extends %3$s> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
                         this.root = root;
+                        this.query = query;
+                        this.builder = builder;
+                    }
+                        
+                    public %2$sRoot_(Root<? extends %3$s> root) {
+                        this(root, null, null);
                     }
 
                     @Override
                     public Root<? extends %3$s> get() {
-                        return root;
+                        return (Root<? extends %3$s>) root;
                     }
 
                 """.formatted(
@@ -136,9 +148,18 @@ public class ClassWriter {
                 @SuppressWarnings("unchecked")
                 @Generated(value = "%1$s")
                 public class %2$sRoot_ extends %3$sRoot_ {
+                
+                    @Override
+                    public Root<? extends %4$s> get() {
+                        return (Root<? extends %4$s>) root;
+                    }
+
+                    public %2$sRoot_(Root<? extends %4$s> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+                        super(root, query, builder);
+                    }
 
                     public %2$sRoot_(Root<? extends %4$s> root) {
-                        super(root);
+                        super(root, null, null);
                     }
 
                 """.formatted(
@@ -171,10 +192,10 @@ public class ClassWriter {
             if (attribute.getValueType().isStruct()) {
                 return bindAttribute(attribute, """
                     public %2$s_Root_.Join_ join%3$s() {
-                        return new %2$s_Root_.Join_() {
+                        return new %2$s_Root_.Join_(query, builder) {
                             @Override
-                            public ListJoin<%1$s, %2$s> get() {
-                                return ((Root<%1$s>) %1$s_Root_.this.get()).join(%1$s_.%4$s);
+                            public ListJoin<? extends %1$s, %2$s> get() {
+                                return %1$s_Root_.this.get().join(%1$s_.%4$s);
                             }
                         };
                     }
@@ -197,10 +218,10 @@ public class ClassWriter {
             if (attribute.getValueType().isStruct()) {
                 return bindAttribute(attribute, """
                     public %2$s_Root_.Join_ join%3$s() {
-                        return new %2$s_Root_.Join_() {
+                        return new %2$s_Root_.Join_(query, builder) {
                             @Override
-                            public SetJoin<%1$s, %2$s> get() {
-                                return ((Root<%1$s>) %1$s_Root_.this.get()).join(%1$s_.%4$s);
+                            public SetJoin<? extends %1$s, %2$s> get() {
+                                return %1$s_Root_.this.get().join(%1$s_.%4$s);
                             }
                         };
                     }
@@ -222,10 +243,10 @@ public class ClassWriter {
             if (attribute.getValueType().isStruct()) {
                 return bindAttribute(attribute, """
                     public %2$s_Root_.Join_ join%3$s() {
-                        return new %2$s_Root_.Join_() {
+                        return new %2$s_Root_.Join_(query, builder) {
                             @Override
-                            public CollectionJoin<%1$s, %2$s> get() {
-                                return ((Root<%1$s>) %1$s_Root_.this.get()).join(%1$s_.%4$s);
+                            public CollectionJoin<? extends %1$s, %2$s> get() {
+                                return %1$s_Root_.this.get().join(%1$s_.%4$s);
                             }
                         };
                     }
@@ -248,40 +269,49 @@ public class ClassWriter {
             if (attribute.getValueType().isStruct()) {
                 return bindAttribute(attribute, """
                     public %2$s_Root_.Join_ join%3$s() {
-                        return new %2$s_Root_.Join_() {
+                        return new %2$s_Root_.Join_(query, builder) {
                             @Override
-                            public Join<%1$s, %2$s> get() {
-                                return ((Root<%1$s>) %1$s_Root_.this.get()).join(%1$s_.%4$s);
+                            public Join<? extends %1$s, %2$s> get() {
+                                return %1$s_Root_.this.get().join(%1$s_.%4$s);
                             }
                         };
                     }
 
                     public %2$s_Root_.Path_ get%3$s() {
-                        return new %2$s_Root_.Path_() {
+                        return new %2$s_Root_.Path_(query, builder) {
                             @Override
                             public Path<%2$s> get() {
-                                return ((Root<%1$s>) %1$s_Root_.this.get()).get(%1$s_.%4$s);
+                                return %1$s_Root_.this.get().get(%1$s_.%4$s);
                             }
                         };
                     }
 
                 """);
-            }  else {
-                return bindAttribute(attribute, """
-                    public Path<%2$s> get%3$s() {
-                        return ((Root<%1$s>) %1$s_Root_.this.get()).get(%1$s_.%4$s);
-                    }
-
-                """);
+            } else {
+                if (context.isAddCriteria()) {
+                    return bindAttribute(attribute, """
+                            public PATH_CLASSNAME get%3$s() {
+                                return new PATH_CLASSNAME(() -> %1$s_Root_.this.get().get(%1$s_.%4$s), builder);
+                            }
+        
+                        """.replace("PATH_CLASSNAME", criteriaPathClassName(attribute)));
+                } else {
+                    return bindAttribute(attribute, """
+                        public Path<%2$s> get%3$s() {
+                            return %1$s_Root_.this.get().get(%1$s_.%4$s);
+                        }
+    
+                    """);
+                }
             }
         } else if (attribute.getAttributeType().isMap()) {
             if (attribute.getValueType().isStruct()) {
                 return bindMapAttribute(attribute, """
                     public %3$s_Root_.Join_ join%4$s() {
-                        return new %3$s_Root_.Join_() {
+                        return new %3$s_Root_.Join_(query, builder) {
                             @Override
-                            public MapJoin<%1$s, %2$s, %3$s> get() {
-                                return ((Root<%1$s>) %1$s_Root_.this.get()).join(%1$s_.%5$s);
+                            public MapJoin<? extends %1$s, %2$s, %3$s> get() {
+                                return %1$s_Root_.this.get().join(%1$s_.%5$s);
                             }
                         };
                     }
@@ -315,17 +345,29 @@ public class ClassWriter {
 
         if (Objects.isNull(entity.getSuperClass())) {
             sb.append("""
-                    public static abstract class Join_ implements Supplier<Join<?, ? extends %1$s>> {
+                        public static abstract class Join_ implements Supplier<Join<?, ? extends %1$s>> {
+                            
+                            protected final CriteriaQuery<?> query;
+                            protected final CriteriaBuilder builder;
+                            
+                            public Join_(CriteriaQuery<?> query, CriteriaBuilder builder) {
+                                this.query = query;
+                                this.builder = builder;
+                            }
+                                         
+                            @Override
+                            public abstract Join<?, ? extends %1$s> get();
 
-                        @Override
-                        public abstract Join<?, ? extends %1$s> get();
-
-                """.formatted(
+                    """.formatted(
                     entity.getTargetEntityName()  // %1$s
             ));
         } else {
             sb.append("""
                     public static abstract class Join_ extends %2$sRoot_.Join_ {
+                    
+                        public Join_(CriteriaQuery<?> query, CriteriaBuilder builder) {
+                            super(query, builder);
+                        }
 
                         @Override
                         public abstract Join<?, ? extends %1$s> get();
@@ -353,10 +395,10 @@ public class ClassWriter {
             if (attribute.getValueType().isStruct()) {
                 return bindAttribute(attribute, """
                         public %2$s_Root_.Join_ join%3$s() {
-                            return new %2$s_Root_.Join_() {
+                            return new %2$s_Root_.Join_(query, builder) {
                                 @Override
-                                public ListJoin<%1$s, %2$s> get() {
-                                    return ((Join<?, %1$s>) %1$s_Root_.Join_.this.get()).join(%1$s_.%4$s);
+                                public ListJoin<? extends %1$s, %2$s> get() {
+                                    return %1$s_Root_.Join_.this.get().join(%1$s_.%4$s);
                                 }
                             };
                         }
@@ -368,8 +410,8 @@ public class ClassWriter {
                 """);
             } else {
                 return bindAttribute(attribute, """
-                        public ListJoin<%1$s, %2$s> join%3$s() {
-                            return ((Join<?, %1$s>) get()).join(%1$s_.%4$s);
+                        public ListJoin<? extends %1$s, %2$s> join%3$s() {
+                            return get().join(%1$s_.%4$s);
                         }
 
                         public Expression<List<%2$s>> get%3$s() {
@@ -382,10 +424,10 @@ public class ClassWriter {
             if (attribute.getValueType().isStruct()) {
                 return bindAttribute(attribute, """
                         public %2$s_Root_.Join_ join%3$s() {
-                            return new %2$s_Root_.Join_() {
+                            return new %2$s_Root_.Join_(query, builder) {
                                 @Override
-                                public SetJoin<%1$s, %2$s> get() {
-                                    return ((Join<?, %1$s>) %1$s_Root_.Join_.this.get()).join(%1$s_.%4$s);
+                                public SetJoin<? extends %1$s, %2$s> get() {
+                                    return %1$s_Root_.Join_.this.get().join(%1$s_.%4$s);
                                 }
                             };
                         }
@@ -397,8 +439,8 @@ public class ClassWriter {
                 """);
             } else {
                 return bindAttribute(attribute, """
-                        public SetJoin<%1$s, %2$s> join%3$s() {
-                            return ((Join<?, %1$s>) get()).join(%1$s_.%4$s);
+                        public SetJoin<? extends %1$s, %2$s> join%3$s() {
+                            return get().join(%1$s_.%4$s);
                         }
 
                         public Expression<Set<%2$s>> get%3$s() {
@@ -411,10 +453,10 @@ public class ClassWriter {
             if (attribute.getValueType().isStruct()) {
                 return bindAttribute(attribute, """
                         public %2$s_Root_.Join_ join%3$s() {
-                            return new %2$s_Root_.Join_() {
+                            return new %2$s_Root_.Join_(query, builder) {
                                 @Override
-                                public CollectionJoin<%1$s, %2$s> get() {
-                                    return ((Join<?, %1$s>) %1$s_Root_.Join_.this.get()).join(%1$s_.%4$s);
+                                public CollectionJoin<? extends %1$s, %2$s> get() {
+                                    return %1$s_Root_.Join_.this.get().join(%1$s_.%4$s);
                                 }
                             };
                         }
@@ -426,8 +468,8 @@ public class ClassWriter {
                 """);
             } else {
                 return bindAttribute(attribute, """
-                        public CollectionJoin<%1$s, %2$s> join%3$s() {
-                            return ((Join<?, %1$s>) get()).join(%1$s_.%4$s);
+                        public CollectionJoin<? extends %1$s, %2$s> join%3$s() {
+                            return get().join(%1$s_.%4$s);
                         }
                         public Expression<Collection<%2$s>> get%3$s() {
                             return ((Join<?, %1$s>) get()).get(%1$s_.%4$s);
@@ -438,16 +480,16 @@ public class ClassWriter {
             if (attribute.getValueType().isStruct()) {
                 return bindAttribute(attribute, """
                         public %2$s_Root_.Join_ join%3$s() {
-                            return new %2$s_Root_.Join_() {
+                            return new %2$s_Root_.Join_(query, builder) {
                                 @Override
-                                public Join<%1$s, %2$s> get() {
-                                    return ((Join<?, %1$s>) %1$s_Root_.Join_.this.get()).join(%1$s_.%4$s);
+                                public Join<? extends %1$s, %2$s> get() {
+                                    return %1$s_Root_.Join_.this.get().join(%1$s_.%4$s);
                                 }
                             };
                         }
 
                         public %2$s_Root_.Path_ get%3$s() {
-                            return new %2$s_Root_.Path_() {
+                            return new %2$s_Root_.Path_(query, builder) {
                                 @Override
                                 public Path<%2$s> get() {
                                     return ((Join<?, %1$s>) %1$s_Root_.Join_.this.get()).get(%1$s_.%4$s);
@@ -457,20 +499,30 @@ public class ClassWriter {
 
                 """);
             } else {
-                return bindAttribute(attribute, """
-                        public Path<%2$s> get%3$s() {
-                            return ((Join<?, %1$s>) get()).get(%1$s_.%4$s);
-                        }
-                """);
+                if (context.isAddCriteria()) {
+                    return bindAttribute(attribute, """
+                            public PATH_CLASSNAME get%3$s() {
+                                return new PATH_CLASSNAME(() -> ((Join<?, %1$s>) get()).get(%1$s_.%4$s), builder);
+                            }
+                                    
+                    """.replace("PATH_CLASSNAME", criteriaPathClassName(attribute)));
+                } else {
+                    return bindAttribute(attribute, """
+                            public Path<%2$s> get%3$s() {
+                                return ((Join<?, %1$s>) get()).get(%1$s_.%4$s);
+                            }
+                            
+                    """);
+                }
             }
         } else if (attribute.getAttributeType().isMap()) {
             if (attribute.getValueType().isStruct()) {
                 return bindMapAttribute(attribute, """
                         public %3$s_Root_.Join_ join%4$s() {
-                            return new %3$s_Root_.Join_() {
+                            return new %3$s_Root_.Join_(query, builder) {
                                 @Override
-                                public MapJoin<%1$s, %2$s, %3$s> get() {
-                                    return ((Join<?, %1$s>) %1$s_Root_.Join_.this.get()).join(%1$s_.%5$s);
+                                public MapJoin<? extends %1$s, %2$s, %3$s> get() {
+                                    return %1$s_Root_.Join_.this.get().join(%1$s_.%5$s);
                                 }
                             };
                         }
@@ -482,8 +534,8 @@ public class ClassWriter {
                 """);
             } else {
                 return bindMapAttribute(attribute, """
-                        public MapJoin<%1$s, %2$s, %3$s> join%4$s() {
-                            return ((Join<?, %1$s>) get()).join(%1$s_.%5$s);
+                        public MapJoin<? extends %1$s, %2$s, %3$s> join%4$s() {
+                            return get().join(%1$s_.%5$s);
                         }
 
                         public Expression<Map<%2$s, %3$s>> get%4$s() {
@@ -508,6 +560,14 @@ public class ClassWriter {
         if (Objects.isNull(entity.getSuperClass())) {
             sb.append("""
                     public static abstract class Path_ implements Supplier<Path<? extends %1$s>> {
+                    
+                        protected final CriteriaQuery<?> query;
+                        protected final CriteriaBuilder builder;
+                
+                        public Path_(CriteriaQuery<?> query, CriteriaBuilder builder) {
+                            this.query = query;
+                            this.builder = builder;
+                        }
 
                         @Override
                         public abstract Path<? extends %1$s> get();
@@ -518,6 +578,10 @@ public class ClassWriter {
         } else {
             sb.append("""
                     public static abstract class Path_ extends %2$sRoot_.Path_ {
+                    
+                        public Path_(CriteriaQuery<?> query, CriteriaBuilder builder) {
+                            super(query, builder);
+                        }
 
                         @Override
                         public abstract Path<? extends %1$s> get();
@@ -565,7 +629,7 @@ public class ClassWriter {
             if (attribute.getValueType().isStruct()) {
                 return bindAttribute(attribute, """
                         public %2$s_Root_.Path_ get%3$s() {
-                            return new %2$s_Root_.Path_() {
+                            return new %2$s_Root_.Path_(query, builder) {
                                 @Override
                                 public Path<%2$s> get() {
                                     return ((Path<%1$s>) %1$s_Root_.Path_.this.get()).get(%1$s_.%4$s);
@@ -575,12 +639,21 @@ public class ClassWriter {
 
                 """);
             } else {
-                return bindAttribute(attribute, """
-                        public Path<%2$s> get%3$s() {
-                            return ((Path<%1$s>) get()).get(%1$s_.%4$s);
-                        }
+                if (context.isAddCriteria()) {
+                    return bindAttribute(attribute, """
+                            public PATH_CLASSNAME get%3$s() {
+                                return new PATH_CLASSNAME(() -> ((Path<%1$s>) get()).get(%1$s_.%4$s), builder);
+                            }
+        
+                    """.replace("PATH_CLASSNAME", criteriaPathClassName(attribute)));
+                } else {
+                    return bindAttribute(attribute, """
+                            public Path<%2$s> get%3$s() {
+                                return ((Path<%1$s>) get()).get(%1$s_.%4$s);
+                            }
 
-                """);
+                    """);
+                }
             }
         } else if (attribute.getAttributeType().isMap()) {
             return bindMapAttribute(attribute, """
@@ -608,8 +681,8 @@ public class ClassWriter {
         return template.formatted(
             imports.apply(attribute.getEnclosingType().getName()), // %1$s
             imports.apply(attribute.getValueType().getName()),     // %2$s
-            capitalize(attribute.getName()),                        // %3$s
-            attribute.getName()                                     // %4$s
+            capitalize(attribute.getName()),                       // %3$s
+            attribute.getName()                                    // %4$s
         );
     }
 
@@ -628,9 +701,29 @@ public class ClassWriter {
             imports.apply(attribute.getEnclosingType().getName()), // %1$s
             imports.apply(attribute.getKeyType().getName()),       // %2$s
             imports.apply(attribute.getValueType().getName()),     // %3$s
-            capitalize(attribute.getName()),                        // %4$s
-            attribute.getName()                                     // %5$s
+            capitalize(attribute.getName()),                       // %4$s
+            attribute.getName()                                    // %5$s
         );
+    }
+
+
+    /**
+     * Get the criteria path class name from given attribute.
+     * @param attribute the attribute
+     * @return the criteria path class name
+     */
+    protected static String criteriaPathClassName(StaticMetamodelAttribute attribute) {
+        if (attribute.getValueType().isBasicString()) {
+            return "Criteria_.StringPath_";
+        } else if (attribute.getValueType().isBasicBoolean()) {
+            return "Criteria_.BooleanPath_";
+        } else if (attribute.getValueType().isBasicNumber()) {
+            return "Criteria_.NumberPath_";
+        } else if (attribute.getValueType().isBasicComparable()) {
+            return "Criteria_.ComparablePath_";
+        } else {
+            return "Criteria_.AnyPath_";
+        }
     }
 
 
