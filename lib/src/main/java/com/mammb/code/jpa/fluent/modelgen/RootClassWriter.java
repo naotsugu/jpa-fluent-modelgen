@@ -103,11 +103,11 @@ public class RootClassWriter {
                     var entitySimpleName = entityFqcn.substring(entityFqcn.lastIndexOf('.') + 1);
                     if (context.isAddCriteria()) {
                         pw.println("""
-                                public static %1$s_Root_ %2$s(Root<%1$s> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
-                                    return new %1$s_Root_(root, query, builder);
+                                public static %1$s_Root_<%1$s> %2$s(Root<%1$s> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+                                    return new %1$s_Root_<>(root, query, builder);
                                 }
-                                public static BiFunction<CriteriaQuery<?>, CriteriaBuilder, %1$s_Root_> %2$s() {
-                                    return (query, builder) -> new %1$s_Root_(query.from(%1$s.class), query, builder);
+                                public static BiFunction<CriteriaQuery<?>, CriteriaBuilder, %1$s_Root_<%1$s>> %2$s() {
+                                    return (query, builder) -> new %1$s_Root_<%1$s>(query.from(%1$s.class), query, builder);
                                 }
                             """.formatted(
                                 entitySimpleName,
@@ -115,10 +115,10 @@ public class RootClassWriter {
                         ));
                     } else {
                         pw.println("""
-                                public static %1$s_Root_ %2$s(Root<%1$s> root) {
-                                    return new %1$s_Root_(root);
+                                public static %1$s_Root_<%1$s> %2$s(Root<%1$s> root) {
+                                    return new %1$s_Root_<>(root);
                                 }
-                                public static %1$s_Root_ %2$s(CriteriaQuery<?> query) {
+                                public static %1$s_Root_<%1$s> %2$s(CriteriaQuery<?> query) {
                                     return %2$s(query.from(%1$s.class));
                                 }
                             """.formatted(

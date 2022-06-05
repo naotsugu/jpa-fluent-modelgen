@@ -117,27 +117,29 @@ public class ClassWriter {
             sb.append("""
                 @SuppressWarnings("unchecked")
                 @Generated(value = "%1$s")
-                public class %2$sRoot_ implements Supplier<Root<? extends %3$s>> {
+                public class %2$sRoot_<T extends %4$s> implements Supplier<Root<T>>%5$s {
 
-                    protected final Root<? extends %3$s> root;
+                    protected final Root<T> root;
                     protected final CriteriaQuery<?> query;
                     protected final CriteriaBuilder builder;
                     
-                    public %2$sRoot_(Root<? extends %3$s> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+                    public %2$sRoot_(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
                         this.root = root;
                         this.query = query;
                         this.builder = builder;
                     }
                         
-                    public %2$sRoot_(Root<? extends %3$s> root) { this(root, null, null); }
+                    public %2$sRoot_(Root<T> root) { this(root, null, null); }
 
                     @Override
-                    public Root<? extends %3$s> get() { return (Root<? extends %3$s>) root; }
+                    public Root<T> get() { return root; }
                     
                 """.formatted(
                     JpaMetaModelEnhanceProcessor.class.getName(), // %1$s
                     entity.getSimpleName(),                       // %2$s
-                    entity.getTargetEntityName()                  // %3$s
+                    entity.getSuperClass(),                       // %3$s
+                    entity.getTargetEntityName(),                 // %4$s
+                    criteriaRootImplements(entity, true)          // %5$s
             ));
             if (context.isAddCriteria()) {
                 sb.append("""
@@ -149,18 +151,18 @@ public class ClassWriter {
             sb.append("""
                 @SuppressWarnings("unchecked")
                 @Generated(value = "%1$s")
-                public class %2$sRoot_ extends %3$sRoot_ {
+                public class %2$sRoot_<T extends %4$s> extends %3$sRoot_<T>%5$s {
                 
                     @Override
-                    public Root<? extends %4$s> get() {
-                        return (Root<? extends %4$s>) root;
+                    public Root<T> get() {
+                        return root;
                     }
 
-                    public %2$sRoot_(Root<? extends %4$s> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+                    public %2$sRoot_(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
                         super(root, query, builder);
                     }
 
-                    public %2$sRoot_(Root<? extends %4$s> root) {
+                    public %2$sRoot_(Root<T> root) {
                         super(root, null, null);
                     }
 
@@ -168,7 +170,8 @@ public class ClassWriter {
                     JpaMetaModelEnhanceProcessor.class.getName(), // %1$s
                     entity.getSimpleName(),                       // %2$s
                     entity.getSuperClass(),                       // %3$s
-                    entity.getTargetEntityName()                  // %4$s
+                    entity.getTargetEntityName(),                 // %4$s
+                    criteriaRootImplements(entity, false)         // %5$s
             ));
         }
 
@@ -347,7 +350,7 @@ public class ClassWriter {
 
         if (Objects.isNull(entity.getSuperClass())) {
             sb.append("""
-                        public static abstract class Join_<T extends %1$s> implements Supplier<Join<?, T>> {
+                        public static abstract class Join_<T extends %1$s> implements Supplier<Join<?, T>>%3$s {
                             
                             protected final CriteriaQuery<?> query;
                             protected final CriteriaBuilder builder;
@@ -361,7 +364,9 @@ public class ClassWriter {
                             public abstract Join<?, T> get();
                             
                     """.formatted(
-                    entity.getTargetEntityName()  // %1$s
+                    entity.getTargetEntityName(),        // %1$s
+                    entity.getSuperClass(),              // %2$s
+                    criteriaJoinImplements(entity, true) // %3$s
             ));
             if (context.isAddCriteria()) {
                 sb.append("""
@@ -371,7 +376,7 @@ public class ClassWriter {
             }
         } else {
             sb.append("""
-                    public static abstract class Join_<T extends %1$s> extends %2$sRoot_.Join_<T> {
+                    public static abstract class Join_<T extends %1$s> extends %2$sRoot_.Join_<T>%3$s {
                     
                         public Join_(CriteriaQuery<?> query, CriteriaBuilder builder) {
                             super(query, builder);
@@ -381,8 +386,9 @@ public class ClassWriter {
                         public abstract Join<?, T> get();
 
                 """.formatted(
-                    entity.getTargetEntityName(), // %1$s
-                    entity.getSuperClass()        // %2$s
+                    entity.getTargetEntityName(),         // %1$s
+                    entity.getSuperClass(),               // %2$s
+                    criteriaJoinImplements(entity, false) // %3$s
             ));
         }
         entity.getAttributes().forEach(attr -> sb.append(generateJoinMethod(attr)));
@@ -567,7 +573,7 @@ public class ClassWriter {
 
         if (Objects.isNull(entity.getSuperClass())) {
             sb.append("""
-                    public static abstract class Path_<T extends %1$s> implements Supplier<Path<T>>%3$s{
+                    public static abstract class Path_<T extends %1$s> implements Supplier<Path<T>>%3$s {
                     
                         protected final CriteriaQuery<?> query;
                         protected final CriteriaBuilder builder;
@@ -593,7 +599,7 @@ public class ClassWriter {
             }
         } else {
             sb.append("""
-                    public static abstract class Path_<T extends %1$s> extends %2$sRoot_.Path_<T>%3$s{
+                    public static abstract class Path_<T extends %1$s> extends %2$sRoot_.Path_<T>%3$s {
                     
                         public Path_(CriteriaQuery<?> query, CriteriaBuilder builder) {
                             super(query, builder);
@@ -605,7 +611,7 @@ public class ClassWriter {
                 """.formatted(
                     entity.getTargetEntityName(),         // %1$s
                     entity.getSuperClass(),               // %2$s
-                    criteriaPathImplements(entity, false)  // %3$s
+                    criteriaPathImplements(entity, false) // %3$s
             ));
         }
         entity.getAttributes().forEach(attr -> sb.append(generatePathMethod(attr)));
@@ -730,16 +736,38 @@ public class ClassWriter {
      * @param append append implements?
      * @return the criteria implements clause
      */
-    protected String criteriaPathImplements(StaticMetamodelEntity entity, boolean append) {
+    protected String criteriaRootImplements(StaticMetamodelEntity entity, boolean append) {
         if (context.isAddCriteria()) {
             if (entity.getTargetEntity().isComparable()) {
-                return (append ? ", " : " implements ") + "Criteria_.ComparableExpression<T, Path<T>> ";
+                return (append ? ", " : " implements ") + "Criteria_.ComparableExpression<T, Root<T>>";
             } else {
-                return (append ? ", " : " implements ") + "Criteria_.AnyExpression<T, Path<T>> ";
+                return (append ? ", " : " implements ") + "Criteria_.AnyExpression<T, Root<T>>";
             }
         } else {
             return "";
         }
+    }
+
+
+    /**
+     * Get the criteria implements clause.
+     * @param entity the static metamodel entity
+     * @param append append implements?
+     * @return the criteria implements clause
+     */
+    protected String criteriaJoinImplements(StaticMetamodelEntity entity, boolean append) {
+        return criteriaRootImplements(entity, append).replace("Root<T>", "Join<?, T>");
+    }
+
+
+    /**
+     * Get the criteria implements clause.
+     * @param entity the static metamodel entity
+     * @param append append implements?
+     * @return the criteria implements clause
+     */
+    protected String criteriaPathImplements(StaticMetamodelEntity entity, boolean append) {
+        return criteriaRootImplements(entity, append).replace("Root", "Path");
     }
 
 
