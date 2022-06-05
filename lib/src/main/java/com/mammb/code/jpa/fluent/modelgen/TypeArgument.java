@@ -99,38 +99,38 @@ public class TypeArgument {
 
 
     /**
-     * Gets whether {@link PersistenceType} is a basic and string.
-     * @return if {@link PersistenceType} is a basic and string, then {@code true}
+     * Gets whether {@link PersistenceType} is a string.
+     * @return if {@link PersistenceType} is a string, then {@code true}
      */
-    public boolean isBasicString() {
-        return isBasic() &&
-                "java.lang.String".equals(getName());
-    }
-
-    /**
-     * Gets whether {@link PersistenceType} is a basic and boolean.
-     * @return if {@link PersistenceType} is a basic and boolean, then {@code true}
-     */
-    public boolean isBasicBoolean() {
-        return isBasic() &&
-                ("java.lang.Boolean".equals(getName()) || "boolean".equals(getName()));
-    }
-
-    /**
-     * Gets whether {@link PersistenceType} is a basic and number.
-     * @return if {@link PersistenceType} is a basic and number, then {@code true}
-     */
-    public boolean isBasicNumber() {
-        return isBasic() && isAssignable(Number.class);
+    public boolean isString() {
+        return "java.lang.String".equals(getName());
     }
 
 
     /**
-     * Gets whether {@link PersistenceType} is a basic and comparable.
-     * @return if {@link PersistenceType} is a basic and comparable, then {@code true}
+     * Gets whether {@link PersistenceType} is a boolean.
+     * @return if {@link PersistenceType} is a boolean, then {@code true}
      */
-    public boolean isBasicComparable() {
-        return isBasic() && isAssignable(Comparable.class);
+    public boolean isBoolean() {
+        return "java.lang.Boolean".equals(getName()) || "boolean".equals(getName());
+    }
+
+
+    /**
+     * Gets whether {@link PersistenceType} is a number.
+     * @return if {@link PersistenceType} is a number, then {@code true}
+     */
+    public boolean isNumber() {
+        return isAssignable(Number.class);
+    }
+
+
+    /**
+     * Gets whether {@link PersistenceType} is a comparable.
+     * @return if {@link PersistenceType} is a comparable, then {@code true}
+     */
+    public boolean isComparable() {
+        return isAssignable(Comparable.class);
     }
 
 
