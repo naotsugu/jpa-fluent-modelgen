@@ -62,6 +62,7 @@ public class RootClassWriter {
         try {
 
             var packageName = createPackageName();
+            packageName = packageName.isBlank() ? "com.mammb.code.jpa.core" : packageName;
 
             FileObject fo = context.getFiler().createSourceFile(packageName + ".Root_");
 

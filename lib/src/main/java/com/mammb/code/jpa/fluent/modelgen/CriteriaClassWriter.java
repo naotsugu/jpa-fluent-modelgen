@@ -137,6 +137,24 @@ public class CriteriaClassWriter {
                                     super(expression, builder);
                                 }
                             }
+                            
+                            public static class AnyCollectionExpression_<C extends Collection<?>, T extends Expression<C>> implements AnyCollectionExpression<C, T> {
+                                private final Supplier<T> expression;
+                                private final CriteriaBuilder builder;
+                                public AnyCollectionExpression_(Supplier<T> expression, CriteriaBuilder builder) {
+                                    this.expression = expression;
+                                    this.builder = builder;
+                                }
+                                @Override public T get() { return expression.get(); }
+                                @Override public CriteriaBuilder builder() { return builder; }
+                            }
+                        
+                            public static class CollectionExpression_<E, C extends Collection<E>, T extends Expression<C>>
+                                    extends AnyCollectionExpression_<C, T> implements CollectionExpression<E, C, T> {
+                                public CollectionExpression_(Supplier<T> expression, CriteriaBuilder builder) {
+                                    super(expression, builder);
+                                }
+                            }
                                         
                             // ------------------------------------------------------------------------
                                         
