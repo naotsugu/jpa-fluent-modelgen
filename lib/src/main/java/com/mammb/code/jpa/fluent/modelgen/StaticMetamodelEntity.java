@@ -17,12 +17,10 @@ package com.mammb.code.jpa.fluent.modelgen;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Types;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,7 +55,7 @@ public class StaticMetamodelEntity {
     protected StaticMetamodelEntity(Context context, TypeElement element) {
         this.context = context;
         this.element = element;
-        this.attributes = attributes(element.getEnclosedElements(), context.getTypeUtils());
+        this.attributes = attributes(context, element.getEnclosedElements());
         context.setJakarta(annotationTypes(element).contains(ANNOTATION_TYPE));
     }
 
@@ -149,7 +147,7 @@ public class StaticMetamodelEntity {
      * @return If the target element has a static metamodel annotation, return {@code true}.
      */
     private static boolean isStaticMetamodel(Element element) {
-        return ElementKind.CLASS == element.getKind() && annotationTypes(element).stream()
+        return element.getKind().isClass() && annotationTypes(element).stream()
                 .anyMatch(ann -> ANNOTATION_TYPE.equals(ann) || ANNOTATION_TYPE_LEGACY.equals(ann));
     }
 
@@ -168,16 +166,28 @@ public class StaticMetamodelEntity {
 
 
     /**
+     * Get the metamodel target entity as {@link TypeArgument}.
+     * @return the metamodel target entity
+     */
+    public TypeArgument getTargetEntity() {
+        var metamodelName = element.getQualifiedName().toString();
+        var entityName = metamodelName.substring(0, metamodelName.length() - 1);
+        return TypeArgument.of(context,
+                context.getElementUtils().getTypeElement(entityName).asType());
+    }
+
+
+    /**
      * Create StaticMetamodelAttributes from given the enclosed elements
+     * @param context context of processing
      * @param enclosedElements the enclosed elements
-     * @param types the type Utility
      * @return the list of StaticMetamodelAttributes
      */
-    private static List<StaticMetamodelAttribute> attributes(List<? extends Element> enclosedElements, Types types) {
+    private static List<StaticMetamodelAttribute> attributes(Context context, List<? extends Element> enclosedElements) {
         return ElementFilter.fieldsIn(enclosedElements).stream()
             .filter(e -> e.asType().toString().startsWith(AttributeType.PACKAGE_NAME)
                       || e.asType().toString().startsWith(AttributeType.PACKAGE_NAME_LEGACY))
-            .map(e -> StaticMetamodelAttribute.of(e, types))
+            .map(e -> StaticMetamodelAttribute.of(context, e))
             .toList();
     }
 

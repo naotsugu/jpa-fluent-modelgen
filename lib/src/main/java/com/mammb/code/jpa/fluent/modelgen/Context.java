@@ -43,6 +43,9 @@ public class Context {
     /** Add root factory option. */
     private final boolean addRoot;
 
+    /** Add criteria option. */
+    private final boolean addCriteria;
+
     /** Mode of jakarta or javax. */
     private boolean jakarta;
 
@@ -52,12 +55,14 @@ public class Context {
      * @param pe the annotation processing environment
      * @param debug the mode of debug
      * @param addRoot the mode of add root factory
+     * @param addCriteria the mode of add criteria
      */
-    protected Context(ProcessingEnvironment pe, boolean debug, boolean addRoot) {
+    protected Context(ProcessingEnvironment pe, boolean debug, boolean addRoot, boolean addCriteria) {
         this.pe = pe;
         this.generatedModelClasses = new HashSet<>();
         this.debug = debug;
         this.addRoot = addRoot;
+        this.addCriteria = addCriteria;
         this.jakarta = true;
     }
 
@@ -67,10 +72,11 @@ public class Context {
      * @param pe processing environment
      * @param debug the mode of debug
      * @param addRoot the mode of add root factory
+     * @param addCriteria the mode of add criteria
      * @return the context
      */
-    public static Context of(ProcessingEnvironment pe, boolean debug, boolean addRoot) {
-        return new Context(pe, debug, addRoot);
+    public static Context of(ProcessingEnvironment pe, boolean debug, boolean addRoot, boolean addCriteria) {
+        return new Context(pe, debug, addRoot, addCriteria);
     }
 
 
@@ -154,6 +160,15 @@ public class Context {
      */
     public boolean isAddRoot() {
         return addRoot;
+    }
+
+
+    /**
+     * Get the option fo add criteria.
+     * @return the option fo add criteria
+     */
+    public boolean isAddCriteria() {
+        return addCriteria;
     }
 
 

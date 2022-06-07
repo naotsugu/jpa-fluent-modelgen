@@ -25,6 +25,9 @@ import java.util.Objects;
  */
 public class TypeArgument {
 
+    /** Context of processing. */
+    private final Context context;
+
     /** Type argument mirror. */
     private final TypeMirror typeMirror;
 
@@ -38,21 +41,22 @@ public class TypeArgument {
     /**
      * Private constructor.
      */
-    private TypeArgument(TypeMirror typeMirror, Element typeMirrorElement) {
+    private TypeArgument(Context context, TypeMirror typeMirror) {
+        this.context = context;
         this.typeMirror = typeMirror;
-        this.typeMirrorElement = typeMirrorElement;
+        this.typeMirrorElement = context.getTypeUtils().asElement(typeMirror);
         this.persistenceType = asPersistenceType(typeMirrorElement);
     }
 
 
     /**
      * Create the type argument.
-     * @param typeMirror Type argument mirror
-     * @param typeMirrorElement Type argument mirror element
+     * @param context context of processing
+     * @param typeMirror type argument mirror
      * @return the type argument
      */
-    public static TypeArgument of(TypeMirror typeMirror, Element typeMirrorElement) {
-        return new TypeArgument(typeMirror, typeMirrorElement);
+    public static TypeArgument of(Context context, TypeMirror typeMirror) {
+        return new TypeArgument(context, typeMirror);
     }
 
 
@@ -95,6 +99,42 @@ public class TypeArgument {
 
 
     /**
+     * Gets whether {@link PersistenceType} is a string.
+     * @return if {@link PersistenceType} is a string, then {@code true}
+     */
+    public boolean isString() {
+        return "java.lang.String".equals(getName());
+    }
+
+
+    /**
+     * Gets whether {@link PersistenceType} is a boolean.
+     * @return if {@link PersistenceType} is a boolean, then {@code true}
+     */
+    public boolean isBoolean() {
+        return "java.lang.Boolean".equals(getName()) || "boolean".equals(getName());
+    }
+
+
+    /**
+     * Gets whether {@link PersistenceType} is a number.
+     * @return if {@link PersistenceType} is a number, then {@code true}
+     */
+    public boolean isNumber() {
+        return isAssignable(Number.class);
+    }
+
+
+    /**
+     * Gets whether {@link PersistenceType} is a comparable.
+     * @return if {@link PersistenceType} is a comparable, then {@code true}
+     */
+    public boolean isComparable() {
+        return isAssignable(Comparable.class);
+    }
+
+
+    /**
      * Convert the element as {@link PersistenceType}.
      * @param elm the element
      * @return {@link PersistenceType}
@@ -110,6 +150,13 @@ public class TypeArgument {
             .map(PersistenceType::of)
             .findFirst()
             .orElse(PersistenceType.BASIC);
+    }
+
+
+    private boolean isAssignable(Class<?> clazz) {
+        return typeMirrorElement.getKind().isClass() && context.getTypeUtils().isAssignable(
+                typeMirrorElement.asType(),
+                context.getElementUtils().getTypeElement(clazz.getCanonicalName()).asType());
     }
 
 }

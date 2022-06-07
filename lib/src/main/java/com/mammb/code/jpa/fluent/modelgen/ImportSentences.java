@@ -46,7 +46,10 @@ public class ImportSentences {
 
 
     private void initImplicit() {
+        map.put("CriteriaBuilder","jakarta.persistence.criteria.CriteriaBuilder");
+        map.put("CriteriaQuery",  "jakarta.persistence.criteria.CriteriaQuery");
         map.put("Expression",     "jakarta.persistence.criteria.Expression");
+        map.put("Predicate",      "jakarta.persistence.criteria.Predicate");
         map.put("Root",           "jakarta.persistence.criteria.Root");
         map.put("Join",           "jakarta.persistence.criteria.Join");
         map.put("Path",           "jakarta.persistence.criteria.Path");
@@ -64,7 +67,10 @@ public class ImportSentences {
 
 
     private void initLegacyImplicit() {
+        map.put("CriteriaBuilder","javax.persistence.criteria.CriteriaBuilder");
+        map.put("CriteriaQuery",  "javax.persistence.criteria.CriteriaQuery");
         map.put("Expression",     "javax.persistence.criteria.Expression");
+        map.put("Predicate",      "javax.persistence.criteria.Predicate");
         map.put("Root",           "javax.persistence.criteria.Root");
         map.put("Join",           "javax.persistence.criteria.Join");
         map.put("Path",           "javax.persistence.criteria.Path");
