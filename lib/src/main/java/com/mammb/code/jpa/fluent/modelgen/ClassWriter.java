@@ -836,7 +836,7 @@ public class ClassWriter {
      * @param attribute the attribute
      * @return the criteria path class name
      */
-    protected static String criteriaPathClassName(StaticMetamodelAttribute attribute) {
+    protected String criteriaPathClassName(StaticMetamodelAttribute attribute) {
         if (attribute.getValueType().isString()) {
             return "Criteria_.StringPath_";
         } else if (attribute.getValueType().isBoolean()) {
@@ -844,9 +844,9 @@ public class ClassWriter {
         } else if (attribute.getValueType().isNumber()) {
             return "Criteria_.NumberPath_";
         } else if (attribute.getValueType().isComparable()) {
-            return "Criteria_.ComparablePath_";
+            return "Criteria_.ComparablePath_<" + imports.apply(attribute.getValueType().getName()) + ">";
         } else {
-            return "Criteria_.AnyPath_";
+            return "Criteria_.AnyPath_<" + imports.apply(attribute.getValueType().getName()) + ">";
         }
     }
 

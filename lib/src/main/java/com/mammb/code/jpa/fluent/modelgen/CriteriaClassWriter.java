@@ -61,16 +61,16 @@ public class CriteriaClassWriter {
             try (PrintWriter pw = new PrintWriter(fo.openOutputStream())) {
                 pw.println("""
                         package com.mammb.code.jpa.core;
-                                        
+                                                
                         import jakarta.persistence.criteria.CriteriaBuilder;
                         import jakarta.persistence.criteria.Expression;
                         import jakarta.persistence.criteria.Path;
                         import jakarta.persistence.criteria.Predicate;
                         import java.util.Collection;
                         import java.util.function.Supplier;
-                                        
+                                                
                         public class Criteria_ {
-                                        
+                                                
                             public static class AnyPath_<E> implements AnyExpression<E, Path<E>> {
                                 private final Supplier<Path<E>> path;
                                 private final CriteriaBuilder builder;
@@ -91,7 +91,7 @@ public class CriteriaClassWriter {
                                 @Override public Expression<E> get() { return expression.get(); };
                                 @Override public CriteriaBuilder builder() { return builder; }
                             }
-                                        
+                                                
                             public static class ComparablePath_<E extends Comparable<? super E>>
                                     extends AnyPath_<E> implements ComparableExpression<E, Path<E>> {
                                 public ComparablePath_(Supplier<Path<E>> path, CriteriaBuilder builder) {
@@ -104,7 +104,7 @@ public class CriteriaClassWriter {
                                     super(expression, builder);
                                 }
                             }
-                                        
+                                                
                             public static class StringPath_ extends AnyPath_<String> implements StringExpression<Path<String>> {
                                 public StringPath_(Supplier<Path<String>> path, CriteriaBuilder builder) {
                                     super(path, builder);
@@ -115,7 +115,7 @@ public class CriteriaClassWriter {
                                     super(expression, builder);
                                 }
                             }
-                                        
+                                                
                             public static class BooleanPath_ extends AnyPath_<Boolean> implements BooleanExpression<Path<Boolean>> {
                                 public BooleanPath_(Supplier<Path<Boolean>> path, CriteriaBuilder builder) {
                                     super(path, builder);
@@ -126,7 +126,7 @@ public class CriteriaClassWriter {
                                     super(expression, builder);
                                 }
                             }
-                                        
+                                                
                             public static class NumberPath_<T extends Number> extends AnyPath_<T> implements NumberExpression<T, Path<T>> {
                                 public NumberPath_(Supplier<Path<T>> path, CriteriaBuilder builder) {
                                     super(path, builder);
@@ -137,7 +137,8 @@ public class CriteriaClassWriter {
                                     super(expression, builder);
                                 }
                             }
-                            
+                                                
+                                                
                             public static class AnyCollectionExpression_<C extends Collection<?>, T extends Expression<C>> implements AnyCollectionExpression<C, T> {
                                 private final Supplier<T> expression;
                                 private final CriteriaBuilder builder;
@@ -148,16 +149,16 @@ public class CriteriaClassWriter {
                                 @Override public T get() { return expression.get(); }
                                 @Override public CriteriaBuilder builder() { return builder; }
                             }
-                        
+                                                
                             public static class CollectionExpression_<E, C extends Collection<E>, T extends Expression<C>>
                                     extends AnyCollectionExpression_<C, T> implements CollectionExpression<E, C, T> {
                                 public CollectionExpression_(Supplier<T> expression, CriteriaBuilder builder) {
                                     super(expression, builder);
                                 }
                             }
-                                        
+                                                
                             // ------------------------------------------------------------------------
-                                        
+                                                
                             public interface AnyExpression<E, T extends Expression<E>> extends Supplier<T> {
                                 T get();
                                 CriteriaBuilder builder();
@@ -180,7 +181,7 @@ public class CriteriaClassWriter {
                                     return builder().isNotNull(get());
                                 }
                             }
-                                        
+                                                
                             public interface ComparableExpression<E extends Comparable<? super E>, T extends Expression<E>>
                                     extends Supplier<T>, AnyExpression<E, T> {
                                 T get();
@@ -196,7 +197,7 @@ public class CriteriaClassWriter {
                                 default Predicate between(Expression<? extends E> x, Expression<? extends E> y) { return builder().between(get(), x, y); }
                                 default Predicate between(E x, E y) { return builder().between(get(), x, y); }
                             }
-                                        
+                                                
                             public interface StringExpression<T extends Expression<String>>
                                     extends Supplier<T>, AnyExpression<String, T>, ComparableExpression<String, T> {
                                 T get();
@@ -210,7 +211,7 @@ public class CriteriaClassWriter {
                                 default Predicate notLike(Expression<String> pattern, char escapeChar) { return builder().notLike(get(), pattern, escapeChar); }
                                 default Predicate notLike(String pattern, char escapeChar) { return builder().notLike(get(), pattern, escapeChar); }
                             }
-                                        
+                                                
                             public interface BooleanExpression<T extends Expression<Boolean>>
                                     extends Supplier<T>, AnyExpression<Boolean, T>, ComparableExpression<Boolean, T> {
                                 T get();
@@ -218,7 +219,7 @@ public class CriteriaClassWriter {
                                 default Predicate isTrue() { return builder().isTrue(get()); }
                                 default Predicate isFalse() { return builder().isFalse(get()); }
                             }
-                                        
+                                                
                             public interface NumberExpression<E extends Number, T extends Expression<E>>
                                     extends Supplier<T>, AnyExpression<E, T> {
                                 T get();
@@ -232,7 +233,7 @@ public class CriteriaClassWriter {
                                 default Predicate le(Expression<? extends Number> y) { return builder().le(get(), y); }
                                 default Predicate le(Number y) { return builder().le(get(), y); }
                             }
-                                        
+                                                
                             public interface AnyCollectionExpression<C extends Collection<?>, T extends Expression<C>>
                                     extends Supplier<T>, AnyExpression<C, T> {
                                 T get();
@@ -241,7 +242,7 @@ public class CriteriaClassWriter {
                                 default Predicate isNotEmpty() { return builder().isNotEmpty(get()); }
                                 default Expression<Integer> size(Expression<C> collection) { return builder().size(get()); }
                             }
-                                        
+                                                
                             public interface CollectionExpression<E, C extends Collection<E>, T extends Expression<C>>
                                     extends Supplier<T>, AnyExpression<C, T>, AnyCollectionExpression<C, T> {
                                 T get();
@@ -251,8 +252,16 @@ public class CriteriaClassWriter {
                                 default Predicate isNotMember(Expression<E> elem) { return builder().isMember(elem, get()); }
                                 default Predicate isNotMember(E elem) { return builder().isMember(elem, get()); }
                             }
-                                        
+                                                
+                            public interface MapKeyPath<K> extends Supplier<Path<K>> {
+                                Path<K> key();
+                            }
+                            public interface MapValuePath<V> extends Supplier<Path<V>> {
+                                Path<V> key();
+                            }
+                                                
                         }
+                                                
                         """);
                 pw.flush();
             }

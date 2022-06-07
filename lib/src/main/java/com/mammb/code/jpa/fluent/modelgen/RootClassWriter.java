@@ -78,13 +78,16 @@ public class RootClassWriter {
                 pw.println("import javax.annotation.processing.Generated;");
                 pw.println("import java.util.function.BiFunction;");
                 pw.println("import java.util.function.Function;");
+                pw.println("import java.util.function.Supplier;");
                 if (context.isJakarta()) {
                     pw.println("import jakarta.persistence.criteria.CriteriaBuilder;");
                     pw.println("import jakarta.persistence.criteria.CriteriaQuery;");
+                    pw.println("import jakarta.persistence.EntityManager;");
                     pw.println("import jakarta.persistence.criteria.Root;");
                 } else {
                     pw.println("import javax.persistence.criteria.CriteriaBuilder;");
                     pw.println("import javax.persistence.criteria.CriteriaQuery;");
+                    pw.println("import javax.persistence.EntityManager;");
                     pw.println("import javax.persistence.criteria.Root;");
                 }
                 for (String metaName : modelClasses) {
@@ -99,6 +102,15 @@ public class RootClassWriter {
                 pw.println("@Generated(value = \"%s\")".formatted(JpaMetaModelEnhanceProcessor.class.getName()));
                 pw.println("public abstract class Root_ {");
                 pw.println();
+                if (context.isAddCriteria()) {
+                    pw.println("""
+                        public interface RootFactory<E, T extends Supplier<Root<E>>> {
+                            T root(CriteriaQuery<?> query, CriteriaBuilder builder);
+                        }
+
+                    """);
+                }
+
                 for (String metaName : modelClasses) {
                     var entityFqcn = metaName.substring(0, metaName.lastIndexOf('_'));
                     var entitySimpleName = entityFqcn.substring(entityFqcn.lastIndexOf('.') + 1);
@@ -107,7 +119,7 @@ public class RootClassWriter {
                                 public static %1$s_Root_<%1$s> %2$s(Root<%1$s> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
                                     return new %1$s_Root_<>(root, query, builder);
                                 }
-                                public static BiFunction<CriteriaQuery<?>, CriteriaBuilder, %1$s_Root_<%1$s>> %2$s() {
+                                public static RootFactory<%1$s, %1$s_Root_<%1$s>> %2$s() {
                                     return (query, builder) -> new %1$s_Root_<%1$s>(query.from(%1$s.class), query, builder);
                                 }
                             """.formatted(
