@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.mammb.code.jpa.fluent.modelgen;
+package com.mammb.code.jpa.fluent.modelgen.model;
+
+import com.mammb.code.jpa.fluent.modelgen.Context;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import java.util.List;
@@ -124,11 +127,21 @@ public class StaticMetamodelEntity {
 
     /**
      * Get the entity class name.
-     * Static metamodel class with _ removed from the end of the name.
+     * Static metamodel class with {@code _} removed from the end of the name.
      * @return the entity class name
      */
     public String getTargetEntityName() {
         return getSimpleName().substring(0, getSimpleName().length() - 1);
+    }
+
+
+    /**
+     * Get the entity class qualified name.
+     * Static metamodel class with {@code _} removed from the end of the name.
+     * @return the entity class name
+     */
+    public String getTargetEntityQualifiedName() {
+        return getQualifiedName().substring(0, getQualifiedName().length() - 1);
     }
 
 
@@ -154,6 +167,9 @@ public class StaticMetamodelEntity {
 
     /**
      * Get the annotation types of target element.
+     * e.g. {@code jakarta.persistence.metamodel.StaticMetamodel}
+     * or {@code javax.persistence.metamodel.StaticMetamodel}
+     *
      * @param element the target element
      * @return the annotation types
      */
@@ -170,10 +186,18 @@ public class StaticMetamodelEntity {
      * @return the metamodel target entity
      */
     public TypeArgument getTargetEntity() {
+        return TypeArgument.of(context, getTargetEntityTypeElement().asType());
+    }
+
+
+    /**
+     * Get the metamodel target entity as {@link TypeElement}.
+     * @return the metamodel target entity as {@link TypeElement}
+     */
+    private TypeElement getTargetEntityTypeElement() {
         var metamodelName = element.getQualifiedName().toString();
         var entityName = metamodelName.substring(0, metamodelName.length() - 1);
-        return TypeArgument.of(context,
-                context.getElementUtils().getTypeElement(entityName).asType());
+        return context.getElementUtils().getTypeElement(entityName);
     }
 
 
@@ -189,6 +213,48 @@ public class StaticMetamodelEntity {
                       || e.asType().toString().startsWith(AttributeType.PACKAGE_NAME_LEGACY))
             .map(e -> StaticMetamodelAttribute.of(context, e))
             .toList();
+    }
+
+
+    /**
+     * Get whether this static metamodel is for Entity.
+     * @return {@code true} if this static metamodel is for Entity
+     */
+    public boolean isEntityMetamodel() {
+        return getTargetEntityTypeElement().getAnnotationMirrors().stream()
+            .map(am -> am.getAnnotationType().toString())
+            .map(PersistenceType::of)
+            .anyMatch(type -> type == PersistenceType.ENTITY);
+    }
+
+
+    /**
+     * Get the entity id type.
+     * e.g. {@code java.lang.Long}
+     * @return the entity id type
+     */
+    public Optional<TypeMirror> getEntityIdType() {
+        return isEntityMetamodel()
+            ? findIdField(getTargetEntityTypeElement()).map(VariableElement::asType)
+            : Optional.empty();
+    }
+
+
+    /**
+     * Find id field.
+     * @param element {@link TypeElement}
+     * @return the VariableElement of id
+     */
+    private Optional<VariableElement> findIdField(TypeElement element) {
+
+        return ElementFilter.fieldsIn(element.getEnclosedElements()).stream()
+            .filter(e -> e.getAnnotationMirrors().stream()
+                .map(AnnotationMirror::getAnnotationType)
+                .map(Object::toString)
+                .anyMatch(ann -> ann.equals("jakarta.persistence.Id") || ann.equals("javax.persistence.Id")))
+            .findFirst()
+            .or(() -> findIdField(context.getElementUtils().getTypeElement(element.getSuperclass().toString())));
+
     }
 
 }
