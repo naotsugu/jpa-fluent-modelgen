@@ -108,11 +108,21 @@ public class StaticMetamodelEntity {
 
     /**
      * Get the superclass name of this static metamodel.
-     * @return the superclass name of this static metamodel. If the superclass is an Object, return {@code null}.
+     * @return the superclass name of this static metamodel. If the superclass is an Object, return {@code ""}.
      */
     public String getSuperClass() {
         TypeMirror superClass = element.getSuperclass();
-        return (Object.class.getCanonicalName().equals(superClass.toString())) ? null : superClass.toString();
+        return (Object.class.getCanonicalName().equals(superClass.toString())) ? "" : superClass.toString();
+    }
+
+    /**
+     * Get the superclass name of this static metamodel target entity.
+     * @return the superclass name of this static metamodel target entity.
+     * If the superclass is an Object, return {@code ""}.
+     */
+    public String getSuperEntityQualifiedName() {
+        var name = getSuperClass();
+        return name.isBlank() ? "" : name.substring(0, name.length() - 1);
     }
 
 

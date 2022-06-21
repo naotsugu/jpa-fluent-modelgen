@@ -32,9 +32,6 @@ import java.util.Objects;
  */
 public class RootClassWriter {
 
-    /** the default package name. */
-    private static final String API_PACKAGE_NAME = "com.mammb.code.jpa.core";
-
     /** Context of processing. */
     private final Context context;
 
@@ -79,11 +76,9 @@ public class RootClassWriter {
 
             try (PrintWriter pw = new PrintWriter(fo.openOutputStream())) {
 
-                // write package
                 pw.println("package " + packageName + ";");
                 pw.println();
 
-                // write import
                 imports.add("javax.annotation.processing.Generated");
                 imports.add("java.util.function.BiFunction");
                 imports.add("java.util.function.Function");
@@ -92,11 +87,12 @@ public class RootClassWriter {
                 imports.add("jakarta.persistence.EntityManager");
                 imports.add("jakarta.persistence.criteria.Root");
                 if (context.isAddCriteria()) {
-                    imports.add(API_PACKAGE_NAME + ".RootSource");
+                    imports.add(ApiClassWriter.PACKAGE_NAME + "." + ApiClassWriter.ROOT_SOURCE);
                 }
                 for (String metaName : modelClasses) {
-                    imports.add(metaName.substring(0, metaName.lastIndexOf('_')));
-                    imports.add(metaName + "Root_");
+                    var name = metaName.substring(0, metaName.lastIndexOf('_'));
+                    imports.add(name);
+                    imports.add(name + "Root_");
                 }
                 pw.println(imports.generateImports(context.isJakarta()));
                 pw.println();
@@ -112,32 +108,32 @@ public class RootClassWriter {
                     var entitySimpleName = entityFqcn.substring(entityFqcn.lastIndexOf('.') + 1);
                     if (context.isAddCriteria()) {
                         pw.println("""
-                                    public static %1$s_Root_<%1$s> %2$s(Root<%1$s> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
-                                        return new %1$s_Root_<>(root, query, builder);
+                                    public static %1$sRoot_<%1$s> %2$s(Root<%1$s> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+                                        return new %1$sRoot_<>(root, query, builder);
                                     }
-                                    public static RootSource<%1$s, %1$s_Root_<%1$s>> %2$s() {
-                                        return new RootSource<%1$s, %1$s_Root_<%1$s>>() {
-                                            @Override public %1$s_Root_<%1$s> root(CriteriaQuery<?> query, CriteriaBuilder builder) {
-                                                return new %1$s_Root_<%1$s>(query.from(rootClass()), query, builder);
+                                    public static RootSource<%1$s, %1$sRoot_<%1$s>> %2$s() {
+                                        return new RootSource<%1$s, %1$sRoot_<%1$s>>() {
+                                            @Override public %1$sRoot_<%1$s> root(CriteriaQuery<?> query, CriteriaBuilder builder) {
+                                                return new %1$sRoot_<%1$s>(query.from(rootClass()), query, builder);
                                             }
                                             @Override public Class<%1$s> rootClass() { return %1$s.class; }
                                         };
                                     }
                                 """.formatted(
                                 entitySimpleName,
-                                uncapitalize(entitySimpleName)
+                                unCapitalize(entitySimpleName)
                         ));
                     } else {
                         pw.println("""
-                                public static %1$s_Root_<%1$s> %2$s(Root<%1$s> root) {
-                                    return new %1$s_Root_<>(root);
+                                public static %1$sRoot_<%1$s> %2$s(Root<%1$s> root) {
+                                    return new %1$sRoot_<>(root);
                                 }
-                                public static %1$s_Root_<%1$s> %2$s(CriteriaQuery<?> query) {
+                                public static %1$sRoot_<%1$s> %2$s(CriteriaQuery<?> query) {
                                     return %2$s(query.from(%1$s.class));
                                 }
                             """.formatted(
                                 entitySimpleName,
-                                uncapitalize(entitySimpleName)
+                                unCapitalize(entitySimpleName)
                         ));
                     }
                 }
@@ -147,17 +143,17 @@ public class RootClassWriter {
             }
 
         } catch (Exception e) {
-            context.logError("Problem opening file to write Root factory class : " + e.getMessage());
+            context.logError("Problem opening file to write Root factory class : {}", e.getMessage());
         }
     }
 
 
     /**
-     * Uncapitalize the given string.
+     * Un Capitalize the given string.
      * @param str the given string
      * @return Capitalized string
      */
-    protected static String uncapitalize(String str) {
+    protected static String unCapitalize(String str) {
         return (Objects.isNull(str) || str.isEmpty())
             ? str
             : str.substring(0, 1).toLowerCase() + str.substring(1);

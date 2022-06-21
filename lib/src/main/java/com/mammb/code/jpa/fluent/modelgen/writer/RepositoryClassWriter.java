@@ -68,7 +68,7 @@ public class RepositoryClassWriter {
      */
     public void writeFile() {
 
-        context.logDebug("Create repository : " + entity.getQualifiedName());
+        context.logDebug("Create repository : {}", entity.getQualifiedName());
 
         try {
 
@@ -77,40 +77,42 @@ public class RepositoryClassWriter {
 
             try (PrintWriter pw = new PrintWriter(fo.openOutputStream())) {
 
-                String body = """
-                    public interface %1$sRepository_ extends BaseRepository<%2$s, %1$s, %1$s_Root_<%1$s>> {
-                        default RootSource<%1$s, %1$s_Root_<%1$s>> rootSource() {
+                var extendsClause = String.join(", ", context.getRepositoryTraitTypes().stream()
+                    .map(trait -> trait.createExtendsClause(entity, imports)).toArray(String[]::new));
+
+                var body = """
+                    public interface %2$sRepository_ extends Repository<%1$s, %2$s, %2$sRoot_<%2$s>>{extends} {
+                        default RootSource<%2$s, %2$sRoot_<%2$s>> rootSource() {
                             return Root_.%3$s();
                         }
                     }
-                    """.formatted(
-                        imports.add(entity.getTargetEntityQualifiedName()),
-                        imports.add(entity.getEntityIdType().get().toString()),
-                        unCapitalize(entity.getTargetEntityName())
+                    """
+                    .replace("{extends}", extendsClause.isEmpty() ? "" : (", " + extendsClause))
+                    .formatted(
+                        imports.add(entity.getEntityIdType().get().toString()),  // %1$s
+                        imports.add(entity.getTargetEntityQualifiedName()),      // %2$s
+                        unCapitalize(entity.getTargetEntityName())               // %3$s
                     );
-
 
                 pw.println("package " + imports.getSelfPackage() + ";");
                 pw.println();
 
                 imports.add("javax.annotation.processing.Generated");
                 imports.add(ApiClassWriter.PACKAGE_NAME + ".*");
-                imports.add(entity.getQualifiedName() + "Root_");
+                imports.add(entity.getTargetEntityQualifiedName() + "Root_");
                 imports.add(PackageNames.createCommonPackageName(context.getGeneratedModelClasses()) + ".Root_");
                 pw.println(imports.generateImports(context.isJakarta()));
                 pw.println();
 
-                // write class
                 pw.println("@Generated(value = \"%s\")".formatted(JpaMetaModelEnhanceProcessor.class.getName()));
                 pw.println(body);
                 pw.flush();
             }
 
         } catch (FilerException e) {
-            context.logError("Problem with Filer : " + e.getMessage());
+            context.logError("Problem with Filer : {}", e.getMessage());
         } catch (Exception e) {
-            context.logError("Problem opening file to write Repository for " +
-                entity.getSimpleName() + " : " + e.getMessage());
+            context.logError("Problem opening file to write Repository for {} : {}", entity.getSimpleName(), e.getMessage());
         }
     }
 

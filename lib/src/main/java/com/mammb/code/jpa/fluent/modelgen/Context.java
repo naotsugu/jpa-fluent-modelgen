@@ -23,6 +23,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -98,6 +99,15 @@ public class Context {
 
 
     /**
+     * Get the repository trait types.
+     * @return the repository trait types
+     */
+    public List<RepositoryTraitType> getRepositoryTraitTypes() {
+        return List.copyOf(repositoryTraits);
+    }
+
+
+    /**
      * Get the filer used to create new source, class, or auxiliary files.
      * @return the filer used to create new source, class, or auxiliary files
      */
@@ -155,28 +165,43 @@ public class Context {
     /**
      * Write the debug log message.
      * @param message the message
+     * @param args the arguments referenced by the format specifiers in this string.
      */
-    public void logDebug(String message) {
+    public void logDebug(String message, Object... args) {
         if (!debug) return;
-        pe.getMessager().printMessage(Diagnostic.Kind.OTHER, message);
+        pe.getMessager().printMessage(Diagnostic.Kind.OTHER, formatted(message, args));
     }
 
 
     /**
      * Write the info log message.
      * @param message the message
+     * @param args the arguments referenced by the format specifiers in this string.
      */
-    public void logInfo(String message) {
-        pe.getMessager().printMessage(Diagnostic.Kind.NOTE, message);
+    public void logInfo(String message, Object... args) {
+        pe.getMessager().printMessage(Diagnostic.Kind.NOTE, formatted(message, args));
     }
 
 
     /**
      * Write the error log message.
      * @param message the message
+     * @param args the arguments referenced by the format specifiers in this string.
      */
-    public void logError(String message) {
-        pe.getMessager().printMessage(Diagnostic.Kind.ERROR, message);
+    public void logError(String message, Object... args) {
+        pe.getMessager().printMessage(Diagnostic.Kind.ERROR, formatted(message, args));
+    }
+
+
+    /**
+     * Format the given format string with args.
+     * @param format the format string
+     * @param args the arguments referenced by the format specifiers in this string.
+     * @return
+     */
+    private String formatted(String format, Object... args) {
+        return Arrays.stream(args).map(Object::toString)
+            .reduce(format, (str, arg) -> str.replaceFirst("\\{}", arg));
     }
 
 

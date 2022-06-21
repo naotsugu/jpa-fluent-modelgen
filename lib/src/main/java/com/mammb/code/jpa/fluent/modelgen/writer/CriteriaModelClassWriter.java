@@ -23,7 +23,6 @@ import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelEntity;
 import javax.annotation.processing.FilerException;
 import javax.tools.FileObject;
 import java.io.PrintWriter;
-import java.util.Objects;
 
 /**
  * Helper to write the actual enhanced metamodel class
@@ -71,14 +70,14 @@ public class CriteriaModelClassWriter {
      */
     public void writeFile() {
 
-        context.logDebug("Create meta model : " + entity.getQualifiedName());
+        context.logDebug("Create meta model : {}", entity.getQualifiedName());
 
         try {
 
             String body = generateBody().toString();
 
             FileObject fo = context.getFiler().createSourceFile(
-                entity.getQualifiedName() + "Root_", entity.getElement());
+                entity.getTargetEntityQualifiedName() + "Root_", entity.getElement());
 
             try (PrintWriter pw = new PrintWriter(fo.openOutputStream())) {
 
@@ -113,10 +112,9 @@ public class CriteriaModelClassWriter {
             }
 
         } catch (FilerException e) {
-            context.logError("Problem with Filer: " + e.getMessage());
+            context.logError("Problem with Filer: {}", e.getMessage());
         } catch (Exception e) {
-            context.logError("Problem opening file to write MetaModel for " +
-                entity.getSimpleName() + ": " + e.getMessage());
+            context.logError("Problem opening file to write MetaModel for {} : {}", entity.getSimpleName(), e.getMessage());
         }
     }
 
@@ -140,11 +138,11 @@ public class CriteriaModelClassWriter {
 
         StringBuilder sb = new StringBuilder();
 
-        if (Objects.isNull(entity.getSuperClass())) {
+        if (entity.getSuperClass().isBlank()) {
             sb.append("""
                 @SuppressWarnings("unchecked")
                 @Generated(value = "%1$s")
-                public class %2$sRoot_<T extends %4$s> implements RootAware<T>%5$s {
+                public class %2$sRoot_<T extends %2$s> implements RootAware<T>%4$s {
 
                     protected final Root<T> root;
                     protected final CriteriaQuery<?> query;
@@ -164,17 +162,16 @@ public class CriteriaModelClassWriter {
                     public CriteriaBuilder builder() { return builder; }
 
                 """.formatted(
-                JpaMetaModelEnhanceProcessor.class.getName(), // %1$s
-                entity.getSimpleName(),                       // %2$s
-                entity.getSuperClass(),                       // %3$s
-                entity.getTargetEntityName(),                 // %4$s
-                criteriaRootImplements(entity, true)          // %5$s
+                JpaMetaModelEnhanceProcessor.class.getName(),      // %1$s
+                entity.getTargetEntityName(),                      // %2$s
+                imports.add(entity.getSuperEntityQualifiedName()), // %3$s
+                criteriaRootImplements(entity, true)               // %4$s
             ));
         } else {
             sb.append("""
                 @SuppressWarnings("unchecked")
                 @Generated(value = "%1$s")
-                public class %2$sRoot_<T extends %4$s> extends %3$sRoot_<T>%5$s {
+                public class %2$sRoot_<T extends %2$s> extends %3$sRoot_<T>%4$s {
 
                     @Override
                     public Root<T> get() {
@@ -190,11 +187,10 @@ public class CriteriaModelClassWriter {
                     }
 
                 """.formatted(
-                JpaMetaModelEnhanceProcessor.class.getName(), // %1$s
-                entity.getSimpleName(),                       // %2$s
-                entity.getSuperClass(),                       // %3$s
-                entity.getTargetEntityName(),                 // %4$s
-                criteriaRootImplements(entity, false)         // %5$s
+                JpaMetaModelEnhanceProcessor.class.getName(),      // %1$s
+                entity.getTargetEntityName(),                      // %2$s
+                imports.add(entity.getSuperEntityQualifiedName()), // %3$s
+                criteriaRootImplements(entity, false)              // %4$s
             ));
         }
 
@@ -219,11 +215,11 @@ public class CriteriaModelClassWriter {
         if (attribute.getAttributeType().isList()) {
             if (attribute.getValueType().isStruct()) {
                 sb.append(attribute.bindTo("""
-                    public %3$s_Root_.Join_<%3$s> join%4$s() {
-                        return new %3$s_Root_.Join_<>(query, builder) {
+                    public %3$sRoot_.Join_<%3$s> join%4$s() {
+                        return new %3$sRoot_.Join_<>(query, builder) {
                             @Override
                             public ListJoin<? extends %1$s, %3$s> get() {
-                                return %1$s_Root_.this.get().join(%1$s_.%5$s);
+                                return %1$sRoot_.this.get().join(%1$s_.%5$s);
                             }
                         };
                     }
@@ -232,18 +228,18 @@ public class CriteriaModelClassWriter {
             }
             sb.append(attribute.bindTo("""
                 public Criteria.CollectionExp<%3$s, List<%3$s>, Expression<List<%3$s>>> get%4$s() {
-                    return new Criteria.CollectionExp(() -> ((Root<%1$s>) %1$s_Root_.this.get()).get(%1$s_.%5$s), builder);
+                    return new Criteria.CollectionExp(() -> ((Root<%1$s>) %1$sRoot_.this.get()).get(%1$s_.%5$s), builder);
                 }
 
             """, imports));
         } else if (attribute.getAttributeType().isSet()) {
             if (attribute.getValueType().isStruct()) {
                 sb.append(attribute.bindTo("""
-                    public %3$s_Root_.Join_<%3$s> join%4$s() {
-                        return new %3$s_Root_.Join_<>(query, builder) {
+                    public %3$sRoot_.Join_<%3$s> join%4$s() {
+                        return new %3$sRoot_.Join_<>(query, builder) {
                             @Override
                             public SetJoin<? extends %1$s, %3$s> get() {
-                                return %1$s_Root_.this.get().join(%1$s_.%5$s);
+                                return %1$sRoot_.this.get().join(%1$s_.%5$s);
                             }
                         };
                     }
@@ -252,18 +248,18 @@ public class CriteriaModelClassWriter {
             }
             sb.append(attribute.bindTo("""
                 public Criteria.CollectionExp<%3$s, Set<%3$s>, Expression<Set<%3$s>>> get%4$s() {
-                    return new Criteria.CollectionExp(() -> ((Root<%1$s>) %1$s_Root_.this.get()).get(%1$s_.%5$s), builder);
+                    return new Criteria.CollectionExp(() -> ((Root<%1$s>) %1$sRoot_.this.get()).get(%1$s_.%5$s), builder);
                 }
 
             """, imports));
         } else if (attribute.getAttributeType().isCollection()) {
             if (attribute.getValueType().isStruct()) {
                 sb.append(attribute.bindTo("""
-                    public %3$s_Root_.Join_<%3$s> join%4$s() {
-                        return new %3$s_Root_.Join_<>(query, builder) {
+                    public %3$sRoot_.Join_<%3$s> join%4$s() {
+                        return new %3$sRoot_.Join_<>(query, builder) {
                             @Override
                             public CollectionJoin<? extends %1$s, %3$s> get() {
-                                return %1$s_Root_.this.get().join(%1$s_.%5$s);
+                                return %1$sRoot_.this.get().join(%1$s_.%5$s);
                             }
                         };
                     }
@@ -272,27 +268,27 @@ public class CriteriaModelClassWriter {
             }
             sb.append(attribute.bindTo("""
                 public Criteria.CollectionExp<%3$s, Collection<%3$s>, Expression<Collection<%3$s>>> get%4$s() {
-                    return new Criteria.CollectionExp(() -> ((Root<%1$s>) %1$s_Root_.this.get()).get(%1$s_.%5$s), builder);
+                    return new Criteria.CollectionExp(() -> ((Root<%1$s>) %1$sRoot_.this.get()).get(%1$s_.%5$s), builder);
                 }
 
             """, imports));
         } else if (attribute.getAttributeType().isSingular()) {
             if (attribute.getValueType().isStruct()) {
                 sb.append(attribute.bindTo("""
-                    public %3$s_Root_.Join_<%3$s> join%4$s() {
-                        return new %3$s_Root_.Join_<>(query, builder) {
+                    public %3$sRoot_.Join_<%3$s> join%4$s() {
+                        return new %3$sRoot_.Join_<>(query, builder) {
                             @Override
                             public Join<? extends %1$s, %3$s> get() {
-                                return %1$s_Root_.this.get().join(%1$s_.%5$s);
+                                return %1$sRoot_.this.get().join(%1$s_.%5$s);
                             }
                         };
                     }
 
-                    public %3$s_Root_.Path_<%3$s> get%4$s() {
-                        return new %3$s_Root_.Path_<>(query, builder) {
+                    public %3$sRoot_.Path_<%3$s> get%4$s() {
+                        return new %3$sRoot_.Path_<>(query, builder) {
                             @Override
                             public Path<%3$s> get() {
-                                return %1$s_Root_.this.get().get(%1$s_.%5$s);
+                                return %1$sRoot_.this.get().get(%1$s_.%5$s);
                             }
                         };
                     }
@@ -301,7 +297,7 @@ public class CriteriaModelClassWriter {
             } else {
                 sb.append(attribute.bindTo("""
                         public PATH_CLASSNAME get%4$s() {
-                            return new PATH_CLASSNAME(() -> %1$s_Root_.this.get().get(%1$s_.%5$s), builder);
+                            return new PATH_CLASSNAME(() -> %1$sRoot_.this.get().get(%1$s_.%5$s), builder);
                         }
 
                     """, imports).replace("PATH_CLASSNAME", criteriaPathClassName(attribute)));
@@ -309,11 +305,11 @@ public class CriteriaModelClassWriter {
         } else if (attribute.getAttributeType().isMap()) {
             if (attribute.getValueType().isStruct()) {
                 sb.append(attribute.bindTo("""
-                    public %3$s_Root_.Join_<%3$s> join%4$s() {
-                        return new %3$s_Root_.Join_<>(query, builder) {
+                    public %3$sRoot_.Join_<%3$s> join%4$s() {
+                        return new %3$sRoot_.Join_<>(query, builder) {
                             @Override
                             public MapJoin<? extends %1$s, %2$s, %3$s> get() {
-                                return %1$s_Root_.this.get().join(%1$s_.%5$s);
+                                return %1$sRoot_.this.get().join(%1$s_.%5$s);
                             }
                         };
                     }
@@ -322,7 +318,7 @@ public class CriteriaModelClassWriter {
             }
             sb.append(attribute.bindTo("""
                 public Expression<Map<%2$s, %3$s>> get%4$s() {
-                    return ((Root<%1$s>) %1$s_Root_.this.get()).get(%1$s_.%5$s);
+                    return ((Root<%1$s>) %1$sRoot_.this.get()).get(%1$s_.%5$s);
                 }
 
             """, imports));
@@ -339,7 +335,7 @@ public class CriteriaModelClassWriter {
 
         StringBuilder sb = new StringBuilder();
 
-        if (Objects.isNull(entity.getSuperClass())) {
+        if (entity.getSuperClass().isBlank()) {
             sb.append("""
                         public static abstract class Join_<T extends %1$s> implements Supplier<Join<?, T>>%3$s {
 
@@ -357,9 +353,9 @@ public class CriteriaModelClassWriter {
                             public CriteriaBuilder builder() { return builder; }
 
                     """.formatted(
-                entity.getTargetEntityName(),        // %1$s
-                entity.getSuperClass(),              // %2$s
-                criteriaJoinImplements(entity, true) // %3$s
+                entity.getTargetEntityName(),                      // %1$s
+                imports.add(entity.getSuperEntityQualifiedName()), // %2$s
+                criteriaJoinImplements(entity, true)               // %3$s
             ));
         } else {
             sb.append("""
@@ -373,9 +369,9 @@ public class CriteriaModelClassWriter {
                         public abstract Join<?, T> get();
 
                 """.formatted(
-                entity.getTargetEntityName(),         // %1$s
-                entity.getSuperClass(),               // %2$s
-                criteriaJoinImplements(entity, false) // %3$s
+                entity.getTargetEntityName(),                      // %1$s
+                imports.add(entity.getSuperEntityQualifiedName()), // %2$s
+                criteriaJoinImplements(entity, false)              // %3$s
             ));
         }
         entity.getAttributes().forEach(attr -> sb.append(generateJoinMethod(attr)));
@@ -397,11 +393,11 @@ public class CriteriaModelClassWriter {
         if (attribute.getAttributeType().isList()) {
             if (attribute.getValueType().isStruct()) {
                 sb.append(attribute.bindTo("""
-                        public %3$s_Root_.Join_<%3$s> join%4$s() {
-                            return new %3$s_Root_.Join_<>(query, builder) {
+                        public %3$sRoot_.Join_<%3$s> join%4$s() {
+                            return new %3$sRoot_.Join_<>(query, builder) {
                                 @Override
                                 public ListJoin<T, %3$s> get() {
-                                    return %1$s_Root_.Join_.this.get().join(%1$s_.%5$s);
+                                    return %1$sRoot_.Join_.this.get().join(%1$s_.%5$s);
                                 }
                             };
                         }
@@ -424,11 +420,11 @@ public class CriteriaModelClassWriter {
         } else if (attribute.getAttributeType().isSet()) {
             if (attribute.getValueType().isStruct()) {
                 sb.append(attribute.bindTo("""
-                        public %3$s_Root_.Join_<%3$s> join%4$s() {
-                            return new %3$s_Root_.Join_<>(query, builder) {
+                        public %3$sRoot_.Join_<%3$s> join%4$s() {
+                            return new %3$sRoot_.Join_<>(query, builder) {
                                 @Override
                                 public SetJoin<T, %3$s> get() {
-                                    return %1$s_Root_.Join_.this.get().join(%1$s_.%5$s);
+                                    return %1$sRoot_.Join_.this.get().join(%1$s_.%5$s);
                                 }
                             };
                         }
@@ -451,11 +447,11 @@ public class CriteriaModelClassWriter {
         } else if (attribute.getAttributeType().isCollection()) {
             if (attribute.getValueType().isStruct()) {
                 sb.append(attribute.bindTo("""
-                        public %3$s_Root_.Join_<%3$s> join%4$s() {
-                            return new %3$s_Root_.Join_<>(query, builder) {
+                        public %3$sRoot_.Join_<%3$s> join%4$s() {
+                            return new %3$sRoot_.Join_<>(query, builder) {
                                 @Override
                                 public CollectionJoin<T, %3$s> get() {
-                                    return %1$s_Root_.Join_.this.get().join(%1$s_.%5$s);
+                                    return %1$sRoot_.Join_.this.get().join(%1$s_.%5$s);
                                 }
                             };
                         }
@@ -478,20 +474,20 @@ public class CriteriaModelClassWriter {
         } else if (attribute.getAttributeType().isSingular()) {
             if (attribute.getValueType().isStruct()) {
                 sb.append(attribute.bindTo("""
-                        public %3$s_Root_.Join_<%3$s> join%4$s() {
-                            return new %3$s_Root_.Join_<>(query, builder) {
+                        public %3$sRoot_.Join_<%3$s> join%4$s() {
+                            return new %3$sRoot_.Join_<>(query, builder) {
                                 @Override
                                 public Join<T, %3$s> get() {
-                                    return %1$s_Root_.Join_.this.get().join(%1$s_.%5$s);
+                                    return %1$sRoot_.Join_.this.get().join(%1$s_.%5$s);
                                 }
                             };
                         }
 
-                        public %3$s_Root_.Path_<%3$s> get%4$s() {
-                            return new %3$s_Root_.Path_<>(query, builder) {
+                        public %3$sRoot_.Path_<%3$s> get%4$s() {
+                            return new %3$sRoot_.Path_<>(query, builder) {
                                 @Override
                                 public Path<%3$s> get() {
-                                    return ((Join<?, %1$s>) %1$s_Root_.Join_.this.get()).get(%1$s_.%5$s);
+                                    return ((Join<?, %1$s>) %1$sRoot_.Join_.this.get()).get(%1$s_.%5$s);
                                 }
                             };
                         }
@@ -508,11 +504,11 @@ public class CriteriaModelClassWriter {
         } else if (attribute.getAttributeType().isMap()) {
             if (attribute.getValueType().isStruct()) {
                 sb.append(attribute.bindTo("""
-                        public %3$s_Root_.Join_<%3$s> join%4$s() {
-                            return new %3$s_Root_.Join_<>(query, builder) {
+                        public %3$sRoot_.Join_<%3$s> join%4$s() {
+                            return new %3$sRoot_.Join_<>(query, builder) {
                                 @Override
                                 public MapJoin<T, %2$s, %3$s> get() {
-                                    return %1$s_Root_.Join_.this.get().join(%1$s_.%5$s);
+                                    return %1$sRoot_.Join_.this.get().join(%1$s_.%5$s);
                                 }
                             };
                         }
@@ -545,7 +541,7 @@ public class CriteriaModelClassWriter {
 
         StringBuilder sb = new StringBuilder();
 
-        if (Objects.isNull(entity.getSuperClass())) {
+        if (entity.getSuperClass().isBlank()) {
             sb.append("""
                     public static abstract class Path_<T extends %1$s> implements Supplier<Path<T>>%3$s {
 
@@ -563,9 +559,9 @@ public class CriteriaModelClassWriter {
                         public CriteriaBuilder builder() { return builder; }
 
                 """.formatted(
-                entity.getTargetEntityName(),          // %1$s
-                entity.getSuperClass(),                // %2$s
-                criteriaPathImplements(entity, true)   // %3$s
+                entity.getTargetEntityName(),                      // %1$s
+                imports.add(entity.getSuperEntityQualifiedName()), // %2$s
+                criteriaPathImplements(entity, true)               // %3$s
             ));
         } else {
             sb.append("""
@@ -579,9 +575,9 @@ public class CriteriaModelClassWriter {
                         public abstract Path<T> get();
 
                 """.formatted(
-                entity.getTargetEntityName(),         // %1$s
-                entity.getSuperClass(),               // %2$s
-                criteriaPathImplements(entity, false) // %3$s
+                entity.getTargetEntityName(),                      // %1$s
+                imports.add(entity.getSuperEntityQualifiedName()), // %2$s
+                criteriaPathImplements(entity, false)              // %3$s
             ));
         }
         entity.getAttributes().forEach(attr -> sb.append(generatePathMethod(attr)));
@@ -624,11 +620,11 @@ public class CriteriaModelClassWriter {
         } else if (attribute.getAttributeType().isSingular()) {
             if (attribute.getValueType().isStruct()) {
                 sb.append(attribute.bindTo("""
-                        public %3$s_Root_.Path_<%3$s> get%4$s() {
-                            return new %3$s_Root_.Path_<>(query, builder) {
+                        public %3$sRoot_.Path_<%3$s> get%4$s() {
+                            return new %3$sRoot_.Path_<>(query, builder) {
                                 @Override
                                 public Path<%3$s> get() {
-                                    return %1$s_Root_.Path_.this.get().get(%1$s_.%5$s);
+                                    return %1$sRoot_.Path_.this.get().get(%1$s_.%5$s);
                                 }
                             };
                         }
