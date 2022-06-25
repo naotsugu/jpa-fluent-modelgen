@@ -15,6 +15,12 @@
  */
 package com.mammb.code.jpa.fluent.modelgen;
 
+import com.mammb.code.jpa.fluent.modelgen.model.RepositoryTraitType;
+import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelEntity;
+import com.mammb.code.jpa.fluent.modelgen.writer.ApiClassWriter;
+import com.mammb.code.jpa.fluent.modelgen.writer.ModelClassWriter;
+import com.mammb.code.jpa.fluent.modelgen.writer.RepositoryClassWriter;
+
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
@@ -24,7 +30,6 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -34,26 +39,26 @@ import java.util.Set;
  */
 @SupportedAnnotationTypes({
     StaticMetamodelEntity.ANNOTATION_TYPE,
-    StaticMetamodelEntity.ANNOTATION_TYPE_LEGACY
+    StaticMetamodelEntity.ANNOTATION_TYPE_LEGACY,
+    RepositoryTraitType.ANNOTATION_TYPE
 })
 @SupportedOptions({
     JpaMetaModelEnhanceProcessor.DEBUG_OPTION,
-    JpaMetaModelEnhanceProcessor.ADD_ROOT_FACTORY,
-    JpaMetaModelEnhanceProcessor.ADD_ROOT_CRITERIA,
+    JpaMetaModelEnhanceProcessor.ADD_REPOSITORY,
 })
 public class JpaMetaModelEnhanceProcessor extends AbstractProcessor {
 
     /** Debug option. */
     public static final String DEBUG_OPTION = "debug";
 
-    /** Add root factory option. */
-    public static final String ADD_ROOT_FACTORY = "addRootFactory";
-
     /** Add criteria option. */
-    public static final String ADD_ROOT_CRITERIA = "addCriteria";
+    public static final String ADD_REPOSITORY = "addRepository";
 
     /** Context of processing. */
     private Context context;
+
+    /** Annotation processing round. */
+    private int round = 0;
 
 
     @Override
@@ -62,11 +67,10 @@ public class JpaMetaModelEnhanceProcessor extends AbstractProcessor {
         super.init(env);
         this.context = Context.of(env,
             Boolean.parseBoolean(env.getOptions().getOrDefault(JpaMetaModelEnhanceProcessor.DEBUG_OPTION, "false")),
-            Boolean.parseBoolean(env.getOptions().getOrDefault(JpaMetaModelEnhanceProcessor.ADD_ROOT_FACTORY, "true")),
-            Boolean.parseBoolean(env.getOptions().getOrDefault(JpaMetaModelEnhanceProcessor.ADD_ROOT_CRITERIA, "false")));
+            Boolean.parseBoolean(env.getOptions().getOrDefault(JpaMetaModelEnhanceProcessor.ADD_REPOSITORY, "false")));
 
         var version = getClass().getPackage().getImplementationVersion();
-        context.logInfo("JPA Static-Metamodel Enhance Generator " + (Objects.isNull(version) ? "" : version));
+        context.logInfo("JPA Static-Metamodel Enhance Generator {}", (Objects.isNull(version) ? "" : version));
 
     }
 
@@ -80,26 +84,32 @@ public class JpaMetaModelEnhanceProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
-        if (roundEnv.processingOver() || annotations.isEmpty()) {
+        context.logDebug("### Round : {}", ++round);
+
+        if (roundEnv.errorRaised() || roundEnv.processingOver() || annotations.isEmpty()) {
             return false;
         }
 
         try {
-            roundEnv.getRootElements().stream()
-                .map(this::asStaticMetamodelEntity)
-                .flatMap(Optional::stream)
-                .forEach(this::createMetaModelClasses);
-        } catch (Exception e) {
-            context.logError("Exception : " + e.getMessage());
-        }
 
-        if (context.isAddRoot()) {
-            context.logDebug("Create root factory class");
-            RootClassWriter.of(context).writeFile();
-        }
-        if (context.isAddCriteria()) {
-            context.logDebug("Create criteria class");
-            CriteriaClassWriter.of(context).writeFile();
+            for (Element element : roundEnv.getRootElements()) {
+                StaticMetamodelEntity.of(context, element)
+                    .ifPresent(this::createMetaModelClasses);
+                RepositoryTraitType.of(context, element)
+                    .ifPresent(context::addRepositoryTraitType);
+            }
+
+            if (context.hasGeneratedModel()) {
+                ApiClassWriter.of(context).writeClasses();
+                if (context.isAddRepository()) {
+                    context.getGeneratedModelClasses().stream()
+                        .filter(StaticMetamodelEntity::isEntityMetamodel)
+                        .forEach(model -> RepositoryClassWriter.of(context, model).writeFile());
+                }
+            }
+
+        } catch (Exception e) {
+            context.logError("Exception : {}", e.getMessage());
         }
 
         return false;
@@ -108,27 +118,24 @@ public class JpaMetaModelEnhanceProcessor extends AbstractProcessor {
 
 
     /**
-     * Create the {@link StaticMetamodelEntity}.
-     * @param element source
-     * @return the {@link StaticMetamodelEntity}
-     */
-    protected Optional<StaticMetamodelEntity> asStaticMetamodelEntity(final Element element) {
-        return StaticMetamodelEntity.of(context, element);
-    }
-
-
-    /**
      * Create the source class
      * @param entity {@link StaticMetamodelEntity}
      */
     protected void createMetaModelClasses(final StaticMetamodelEntity entity) {
-        if (context.isAlreadyGenerated(entity.getQualifiedName())) {
-            context.logDebug("Skip meta model generation : " + entity.getQualifiedName());
+
+        if (!entity.getTargetEntity().getPersistenceType().isEntity() &&
+            !entity.getTargetEntity().getPersistenceType().isEmbeddable()) {
             return;
         }
-        context.logDebug("Create meta model : " + entity.getQualifiedName());
-        ClassWriter.of(context, entity).writeFile();
-        context.markGenerated(entity.getQualifiedName());
+
+        if (context.isAlreadyGenerated(entity.getQualifiedName())) {
+            context.logDebug("Skip meta model generation : {}", entity.getQualifiedName());
+            return;
+        }
+
+        ModelClassWriter.of(context, entity).writeFile();
+        context.addGenerated(entity);
+
     }
 
 }

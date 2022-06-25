@@ -11,7 +11,8 @@ repositories {
 dependencies {
 
     annotationProcessor("org.hibernate:hibernate-jpamodelgen:5.6.9.Final")
-    annotationProcessor("com.mammb:jpa-fluent-modelgen:0.3.0")
+    annotationProcessor(fileTree("../../../lib/build/libs") { include("*.jar") })
+    //annotationProcessor("com.mammb:jpa-fluent-modelgen:0.3.0")
 
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.mammb.code.jpa.fluent.modelgen;
+package com.mammb.code.jpa.fluent.modelgen.model;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -52,6 +52,53 @@ public enum PersistenceType {
      */
     PersistenceType(String name) {
         this.name = name;
+    }
+
+
+    /**
+     * Gets whether {@link PersistenceType} is a structure or not.
+     * @return if {@link PersistenceType} is a structure, then {@code true}
+     */
+    public boolean isStruct() {
+        return this == PersistenceType.ENTITY
+            || this == PersistenceType.EMBEDDABLE
+            || this == PersistenceType.MAPPED_SUPERCLASS;
+    }
+
+
+    /**
+     * Gets whether {@link PersistenceType} is Entity or not.
+     * @return if {@link PersistenceType} is Entity, then {@code true}
+     */
+    public boolean isEntity() {
+        return this == PersistenceType.ENTITY;
+    }
+
+
+    /**
+     * Gets whether {@link PersistenceType} is Embeddable or not.
+     * @return if {@link PersistenceType} is Embeddable, then {@code true}
+     */
+    public boolean isEmbeddable() {
+        return this == PersistenceType.EMBEDDABLE;
+    }
+
+
+    /**
+     * Gets whether {@link PersistenceType} is a MappedSuperClass or not.
+     * @return if {@link PersistenceType} is a MappedSuperClass, then {@code true}
+     */
+    public boolean isMappedSuperClass() {
+        return this == PersistenceType.MAPPED_SUPERCLASS;
+    }
+
+
+    /**
+     * Gets whether {@link PersistenceType} is a basic or not.
+     * @return if {@link PersistenceType} is a basic, then {@code true}
+     */
+    public boolean isBasic() {
+        return this == PersistenceType.BASIC;
     }
 
 

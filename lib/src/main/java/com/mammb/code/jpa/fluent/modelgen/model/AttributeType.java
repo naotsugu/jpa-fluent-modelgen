@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.mammb.code.jpa.fluent.modelgen;
+package com.mammb.code.jpa.fluent.modelgen.model;
 
 import javax.lang.model.element.Element;
 import java.util.Arrays;

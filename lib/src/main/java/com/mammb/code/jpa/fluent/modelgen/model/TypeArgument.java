@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.mammb.code.jpa.fluent.modelgen;
+package com.mammb.code.jpa.fluent.modelgen.model;
+
+import com.mammb.code.jpa.fluent.modelgen.Context;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
@@ -79,26 +81,6 @@ public class TypeArgument {
 
 
     /**
-     * Gets whether {@link PersistenceType} is a structure or not.
-     * @return if {@link PersistenceType} is a structure, then {@code true}
-     */
-    public boolean isStruct() {
-        return getPersistenceType() == PersistenceType.ENTITY
-            || getPersistenceType() == PersistenceType.EMBEDDABLE
-            || getPersistenceType() == PersistenceType.MAPPED_SUPERCLASS;
-    }
-
-
-    /**
-     * Gets whether {@link PersistenceType} is a basic or not.
-     * @return if {@link PersistenceType} is a basic, then {@code true}
-     */
-    public boolean isBasic() {
-        return getPersistenceType() == PersistenceType.BASIC;
-    }
-
-
-    /**
      * Gets whether {@link PersistenceType} is a string.
      * @return if {@link PersistenceType} is a string, then {@code true}
      */
@@ -154,7 +136,8 @@ public class TypeArgument {
 
 
     private boolean isAssignable(Class<?> clazz) {
-        return typeMirrorElement.getKind().isClass() && context.getTypeUtils().isAssignable(
+        return typeMirrorElement.getKind().isClass() &&
+            context.getTypeUtils().isAssignable(
                 typeMirrorElement.asType(),
                 context.getElementUtils().getTypeElement(clazz.getCanonicalName()).asType());
     }

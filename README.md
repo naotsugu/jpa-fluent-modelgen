@@ -24,8 +24,8 @@ At this time, the IDE's code completion cannot be utilized.
 With this library, you can write the following to take advantage of code completion.
 
 ```java
-cb.equal(on(root).joinOrganizations()
-    .getAddress().getZipCode().getCode(), zipCode)
+root(root, query, cb).joinOrganizations()
+    .getAddress().getZipCode().getCode().eq(zipCode);
 ```
 
 ## Usage
@@ -35,7 +35,7 @@ If you use `javax.persistence` API and Gradle Kotlin DSL, define annotation proc
 ```kotlin
 dependencies {
   annotationProcessor("org.hibernate:hibernate-jpamodelgen:5.6.9.Final")
-  annotationProcessor("com.mammb:jpa-fluent-modelgen:0.4.0")
+  annotationProcessor("com.mammb:jpa-fluent-modelgen:0.5.0")
 }
 ```
 
@@ -44,7 +44,7 @@ If you use `jakarta.persistence` API, do the following
 ```kotlin
 dependencies {
   annotationProcessor("org.hibernate.orm:hibernate-jpamodelgen:6.0.0.Final")
-  annotationProcessor("com.mammb:jpa-fluent-modelgen:0.4.0")
+  annotationProcessor("com.mammb:jpa-fluent-modelgen:0.5.0")
 }
 ```
 
@@ -66,22 +66,18 @@ Create Specification Helper.
 ```java
 public class CustomerSpecs {
 
-    public static Specification<Customer> firstNameEq(String firstName) {
-        return (root, query, cb) -> cb.equal(on(root).getFirstName(), firstName);
+    public static Specification<Customer> firstNameLike(String firstName) {
+        return (root, query, cb) -> root(root, query, cb)
+            .getFirstName().like(firstName);
     }
 
     public static Specification<Customer> organizationZipEq(String zipCode) {
         return (root, query, cb) -> {
             query.distinct(true);
-            return cb.equal(on(root).joinOrganizations()
-                .getAddress().getZipCode().getCode(), zipCode);
+            return root(root, query, cb).joinOrganizations()
+                .getAddress().getZipCode().getCode().eq(zipCode);
         };
     }
-
-    private static Customer_Root_ on(Root<Customer> root) {
-        return new Customer_Root_(root);
-    }
-
 }
 ```
 

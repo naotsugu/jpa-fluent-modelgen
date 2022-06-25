@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.mammb.code.jpa.fluent.modelgen;
+package com.mammb.code.jpa.fluent.modelgen.model;
+
+import com.mammb.code.jpa.fluent.modelgen.Context;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.type.DeclaredType;
@@ -24,7 +26,7 @@ import java.util.List;
  *
  * @author Naotsugu Kobayashi
  */
-public class StaticMetamodelAttribute {
+public class StaticMetamodelAttribute implements MetamodelAttribute {
 
     /** Context of processing. */
     private final Context context;
@@ -85,66 +87,31 @@ public class StaticMetamodelAttribute {
     }
 
 
-    /**
-     * Get the attribute type.
-     * e.g. jakarta.persistence.metamodel.SingularAttribute
-     * @return the attribute type
-     */
+    @Override
     public AttributeType getAttributeType() {
         return attributeType;
     }
 
 
-    /**
-     * Get the attribute name.
-     * e.g. userName
-     * @return the attribute name
-     */
+    @Override
     public String getName() {
         return name;
     }
 
 
-    /**
-     * Get the type containing the represented attribute.
-     *
-     * e.g. {@code RootEntity}, if you have the following code :
-     * <pre>{@code
-     *     public static volatile SingularAttribute<RootEntity, String> name;
-     * }</pre>
-     *
-     * @return The type containing the represented attribute
-     */
+    @Override
     public TypeArgument getEnclosingType() {
         return typeArguments.get(0);
     }
 
 
-    /**
-     * Get the type of the key of the represented Map.
-     *
-     * e.g. {@code String}, if you have the following code :
-     * <pre>{@code
-     *     public static volatile MapAttribute<RootEntity, String, Child> map;
-     * }</pre>
-     *
-     * @return The type of the key of the represented Map
-     */
+    @Override
     public TypeArgument getKeyType() {
         return typeArguments.size() > 2 ? typeArguments.get(1) : null;
     }
 
 
-    /**
-     * Get the type of the represented attribute.
-     *
-     * e.g. {@code String}, if you have the following code :
-     * <pre>{@code
-     *     public static volatile SingularAttribute<RootEntity, String> name;
-     * }</pre>
-     *
-     * @return The type of the represented attribute
-     */
+    @Override
     public TypeArgument getValueType() {
         return typeArguments.get(typeArguments.size() - 1);
     }

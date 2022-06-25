@@ -15,11 +15,15 @@
  */
 package com.mammb.code.jpa.fluent.modelgen;
 
+import com.mammb.code.jpa.fluent.modelgen.model.RepositoryTraitType;
+import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelEntity;
+
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -35,16 +39,16 @@ public class Context {
     private final ProcessingEnvironment pe;
 
     /** Generated model classes holder. */
-    private final Collection<String> generatedModelClasses;
+    private final Collection<StaticMetamodelEntity> generatedModelClasses;
+
+    /** RepositoryRootTypes. */
+    private final Collection<RepositoryTraitType> repositoryTraits;
 
     /** Mode of debug. */
     private final boolean debug;
 
-    /** Add root factory option. */
-    private final boolean addRoot;
-
-    /** Add criteria option. */
-    private final boolean addCriteria;
+    /** Add repository option. */
+    private final boolean addRepository;
 
     /** Mode of jakarta or javax. */
     private boolean jakarta;
@@ -54,15 +58,14 @@ public class Context {
      * Private constructor.
      * @param pe the annotation processing environment
      * @param debug the mode of debug
-     * @param addRoot the mode of add root factory
-     * @param addCriteria the mode of add criteria
+     * @param addRepository the mode of add repository
      */
-    protected Context(ProcessingEnvironment pe, boolean debug, boolean addRoot, boolean addCriteria) {
+    protected Context(ProcessingEnvironment pe, boolean debug, boolean addRepository) {
         this.pe = pe;
         this.generatedModelClasses = new HashSet<>();
+        this.repositoryTraits = new HashSet<>();
         this.debug = debug;
-        this.addRoot = addRoot;
-        this.addCriteria = addCriteria;
+        this.addRepository = addRepository;
         this.jakarta = true;
     }
 
@@ -71,12 +74,29 @@ public class Context {
      * Create the context instance.
      * @param pe processing environment
      * @param debug the mode of debug
-     * @param addRoot the mode of add root factory
-     * @param addCriteria the mode of add criteria
+     * @param addRepository the mode of add repository
      * @return the context
      */
-    public static Context of(ProcessingEnvironment pe, boolean debug, boolean addRoot, boolean addCriteria) {
-        return new Context(pe, debug, addRoot, addCriteria);
+    public static Context of(ProcessingEnvironment pe, boolean debug, boolean addRepository) {
+        return new Context(pe, debug, addRepository);
+    }
+
+
+    /**
+     * Add a repositoryRootType.
+     * @param repositoryRootType {@link RepositoryTraitType}
+     */
+    public void addRepositoryTraitType(RepositoryTraitType repositoryRootType) {
+        repositoryTraits.add(repositoryRootType);
+    }
+
+
+    /**
+     * Get the repository trait types.
+     * @return the repository trait types
+     */
+    public List<RepositoryTraitType> getRepositoryTraitTypes() {
+        return List.copyOf(repositoryTraits);
     }
 
 
@@ -108,11 +128,20 @@ public class Context {
 
 
     /**
-     * Mark the given metamodel as generated.
-     * @param name the qualified name of metamodel
+     * Add the given metamodel as generated.
+     * @param entity the {@link StaticMetamodelEntity}
      */
-    void markGenerated(String name) {
-        generatedModelClasses.add(name);
+    void addGenerated(StaticMetamodelEntity entity) {
+        generatedModelClasses.add(entity);
+    }
+
+
+    /**
+     * Gets whether generatedModelClasses are present.
+     * @return {@code true} if generated model classes are present.
+     */
+    boolean hasGeneratedModel() {
+        return !generatedModelClasses.isEmpty();
     }
 
 
@@ -122,53 +151,59 @@ public class Context {
      * @return {@code true} if already generated
      */
     boolean isAlreadyGenerated(String name) {
-        return generatedModelClasses.contains(name);
+        return generatedModelClasses.stream().anyMatch(entity -> entity.getQualifiedName().equals(name));
     }
 
 
     /**
      * Write the debug log message.
      * @param message the message
+     * @param args the arguments referenced by the format specifiers in this string.
      */
-    public void logDebug(String message) {
+    public void logDebug(String message, Object... args) {
         if (!debug) return;
-        pe.getMessager().printMessage(Diagnostic.Kind.OTHER, message);
+        pe.getMessager().printMessage(Diagnostic.Kind.OTHER, formatted(message, args));
     }
 
 
     /**
      * Write the info log message.
      * @param message the message
+     * @param args the arguments referenced by the format specifiers in this string.
      */
-    public void logInfo(String message) {
-        pe.getMessager().printMessage(Diagnostic.Kind.NOTE, message);
+    public void logInfo(String message, Object... args) {
+        pe.getMessager().printMessage(Diagnostic.Kind.NOTE, formatted(message, args));
     }
 
 
     /**
      * Write the error log message.
      * @param message the message
+     * @param args the arguments referenced by the format specifiers in this string.
      */
-    public void logError(String message) {
-        pe.getMessager().printMessage(Diagnostic.Kind.ERROR, message);
+    public void logError(String message, Object... args) {
+        pe.getMessager().printMessage(Diagnostic.Kind.ERROR, formatted(message, args));
     }
 
 
     /**
-     * Get the option fo add root factory.
-     * @return the mode of add root factory
+     * Format the given format string with args.
+     * @param format the format string
+     * @param args the arguments referenced by the format specifiers in this string.
+     * @return the formatted string
      */
-    public boolean isAddRoot() {
-        return addRoot;
+    private String formatted(String format, Object... args) {
+        return Arrays.stream(args).map(Object::toString)
+            .reduce(format, (str, arg) -> str.replaceFirst("\\{}", arg));
     }
 
 
     /**
-     * Get the option fo add criteria.
-     * @return the option fo add criteria
+     * Get the option fo add repository.
+     * @return the option fo add repository
      */
-    public boolean isAddCriteria() {
-        return addCriteria;
+    public boolean isAddRepository() {
+        return addRepository;
     }
 
 
@@ -194,7 +229,7 @@ public class Context {
      * Get the generated model classes.
      * @return the generated model classes
      */
-    public Collection<String> getGeneratedModelClasses() {
+    public Collection<StaticMetamodelEntity> getGeneratedModelClasses() {
         return List.copyOf(generatedModelClasses);
     }
 

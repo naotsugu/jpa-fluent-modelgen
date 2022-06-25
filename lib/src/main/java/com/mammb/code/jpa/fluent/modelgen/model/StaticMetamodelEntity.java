@@ -13,15 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.mammb.code.jpa.fluent.modelgen;
+package com.mammb.code.jpa.fluent.modelgen.model;
+
+import com.mammb.code.jpa.fluent.modelgen.Context;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -46,6 +51,9 @@ public class StaticMetamodelEntity {
     /** Static metamodel type attributes. */
     private final List<StaticMetamodelAttribute> attributes;
 
+    /** Static metamodel type attributes. */
+    private final List<StaticMetamodelAttribute> parentAttributes;
+
 
     /**
      * Private constructor.
@@ -56,6 +64,7 @@ public class StaticMetamodelEntity {
         this.context = context;
         this.element = element;
         this.attributes = attributes(context, element.getEnclosedElements());
+        this.parentAttributes = parentAttributes(context, element);
         context.setJakarta(annotationTypes(element).contains(ANNOTATION_TYPE));
     }
 
@@ -105,11 +114,21 @@ public class StaticMetamodelEntity {
 
     /**
      * Get the superclass name of this static metamodel.
-     * @return the superclass name of this static metamodel. If the superclass is an Object, return {@code null}.
+     * @return the superclass name of this static metamodel. If the superclass is an Object, return {@code ""}.
      */
     public String getSuperClass() {
         TypeMirror superClass = element.getSuperclass();
-        return (Object.class.getCanonicalName().equals(superClass.toString())) ? null : superClass.toString();
+        return (Object.class.getCanonicalName().equals(superClass.toString())) ? "" : superClass.toString();
+    }
+
+    /**
+     * Get the superclass name of this static metamodel target entity.
+     * @return the superclass name of this static metamodel target entity.
+     * If the superclass is an Object, return {@code ""}.
+     */
+    public String getSuperEntityQualifiedName() {
+        var name = getSuperClass();
+        return name.isBlank() ? "" : name.substring(0, name.length() - 1);
     }
 
 
@@ -124,11 +143,21 @@ public class StaticMetamodelEntity {
 
     /**
      * Get the entity class name.
-     * Static metamodel class with _ removed from the end of the name.
+     * Static metamodel class with {@code _} removed from the end of the name.
      * @return the entity class name
      */
     public String getTargetEntityName() {
         return getSimpleName().substring(0, getSimpleName().length() - 1);
+    }
+
+
+    /**
+     * Get the entity class qualified name.
+     * Static metamodel class with {@code _} removed from the end of the name.
+     * @return the entity class name
+     */
+    public String getTargetEntityQualifiedName() {
+        return getQualifiedName().substring(0, getQualifiedName().length() - 1);
     }
 
 
@@ -138,6 +167,18 @@ public class StaticMetamodelEntity {
      */
     public List<StaticMetamodelAttribute> getAttributes() {
         return attributes;
+    }
+
+
+    /**
+     * Get the static metamodel attribute list.
+     * Include super class attribute.
+     * @return the static metamodel attribute list
+     */
+    public List<StaticMetamodelAttribute> getAllAttributes() {
+        var ret = new ArrayList<>(parentAttributes);
+        ret.addAll(attributes);
+        return ret;
     }
 
 
@@ -154,6 +195,9 @@ public class StaticMetamodelEntity {
 
     /**
      * Get the annotation types of target element.
+     * e.g. {@code jakarta.persistence.metamodel.StaticMetamodel}
+     * or {@code javax.persistence.metamodel.StaticMetamodel}
+     *
      * @param element the target element
      * @return the annotation types
      */
@@ -170,16 +214,24 @@ public class StaticMetamodelEntity {
      * @return the metamodel target entity
      */
     public TypeArgument getTargetEntity() {
-        var metamodelName = element.getQualifiedName().toString();
-        var entityName = metamodelName.substring(0, metamodelName.length() - 1);
-        return TypeArgument.of(context,
-                context.getElementUtils().getTypeElement(entityName).asType());
+        return TypeArgument.of(context, getTargetEntityTypeElement().asType());
     }
 
 
     /**
-     * Create StaticMetamodelAttributes from given the enclosed elements
-     * @param context context of processing
+     * Get the metamodel target entity as {@link TypeElement}.
+     * @return the metamodel target entity as {@link TypeElement}
+     */
+    private TypeElement getTargetEntityTypeElement() {
+        var metamodelName = element.getQualifiedName().toString();
+        var entityName = metamodelName.substring(0, metamodelName.length() - 1);
+        return context.getElementUtils().getTypeElement(entityName);
+    }
+
+
+    /**
+     * Create StaticMetamodelAttributes from the given enclosed elements
+     * @param context the context of processing
      * @param enclosedElements the enclosed elements
      * @return the list of StaticMetamodelAttributes
      */
@@ -189,6 +241,70 @@ public class StaticMetamodelEntity {
                       || e.asType().toString().startsWith(AttributeType.PACKAGE_NAME_LEGACY))
             .map(e -> StaticMetamodelAttribute.of(context, e))
             .toList();
+    }
+
+
+    /**
+     * Create StaticMetamodelAttributes from the given typeElement super class.
+     * @param context the context of processing
+     * @param element the static metamodel type element
+     * @return the list of StaticMetamodelAttributes
+     */
+    private static List<StaticMetamodelAttribute> parentAttributes(Context context, TypeElement element) {
+        List<StaticMetamodelAttribute> attributes = new ArrayList<>();
+        TypeMirror superclass = element.getSuperclass();
+        while (Objects.nonNull(superclass)) {
+            Element elem = context.getTypeUtils().asElement(superclass);
+            if (isStaticMetamodel(elem) && elem instanceof TypeElement typeElement) {
+                attributes.addAll(attributes(context, typeElement.getEnclosedElements()));
+                superclass = typeElement.getSuperclass();
+            } else {
+                break;
+            }
+        }
+        return attributes;
+    }
+
+
+    /**
+     * Get whether this static metamodel is for Entity.
+     * @return {@code true} if this static metamodel is for Entity
+     */
+    public boolean isEntityMetamodel() {
+        return getTargetEntityTypeElement().getAnnotationMirrors().stream()
+            .map(am -> am.getAnnotationType().toString())
+            .map(PersistenceType::of)
+            .anyMatch(type -> type == PersistenceType.ENTITY);
+    }
+
+
+    /**
+     * Get the entity id type.
+     * e.g. {@code java.lang.Long}
+     * @return the entity id type
+     */
+    public Optional<TypeMirror> getEntityIdType() {
+        return isEntityMetamodel()
+            ? findIdField(getTargetEntityTypeElement()).map(VariableElement::asType)
+            : Optional.empty();
+    }
+
+
+    /**
+     * Find id field.
+     * @param element {@link TypeElement}
+     * @return the VariableElement of id
+     */
+    private Optional<VariableElement> findIdField(TypeElement element) {
+
+        return ElementFilter.fieldsIn(element.getEnclosedElements()).stream()
+            .filter(e -> e.getAnnotationMirrors().stream()
+                .map(AnnotationMirror::getAnnotationType)
+                .map(Object::toString)
+                .anyMatch(ann -> ann.equals("jakarta.persistence.Id") || ann.equals("javax.persistence.Id")))
+            .findFirst()
+            .or(() -> findIdField(context.getElementUtils().getTypeElement(element.getSuperclass().toString())));
+
     }
 
 }
