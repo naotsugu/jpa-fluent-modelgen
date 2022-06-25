@@ -26,7 +26,7 @@ import java.util.List;
  *
  * @author Naotsugu Kobayashi
  */
-public class StaticMetamodelAttribute implements AttributeBinder {
+public class StaticMetamodelAttribute implements MetamodelAttribute {
 
     /** Context of processing. */
     private final Context context;

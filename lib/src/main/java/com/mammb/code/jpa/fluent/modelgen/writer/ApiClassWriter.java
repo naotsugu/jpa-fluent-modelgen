@@ -239,8 +239,9 @@ public class ApiClassWriter {
                 pw.println("@Generated(value = \"%s\")".formatted(JpaMetaModelEnhanceProcessor.class.getName()));
                 pw.println("""
                     public class %1$s {
+                        interface CommonType extends %2$s {}
 
-                        public static class AnyPath<E> implements AnyExpression<E, Path<E>>, %2$s {
+                        public static class AnyPath<E> implements AnyExpression<E, Path<E>>, CommonType {
                             private final Supplier<Path<E>> path;
                             private final CriteriaBuilder builder;
                             public AnyPath(Supplier<Path<E>> path, CriteriaBuilder builder) {
@@ -251,7 +252,7 @@ public class ApiClassWriter {
                             @Override public CriteriaBuilder builder() { return builder; }
                         }
 
-                        public static class AnyExp<E> implements AnyExpression<E, Expression<E>>, %2$s {
+                        public static class AnyExp<E> implements AnyExpression<E, Expression<E>>, CommonType {
                             private final Supplier<Expression<E>> expression;
                             private final CriteriaBuilder builder;
                             public AnyExp(Supplier<Expression<E>> expression, CriteriaBuilder builder) {
@@ -263,56 +264,56 @@ public class ApiClassWriter {
                         }
 
                         public static class ComparablePath<E extends Comparable<? super E>>
-                                extends AnyPath<E> implements ComparableExpression<E, Path<E>>, %2$s {
+                                extends AnyPath<E> implements ComparableExpression<E, Path<E>>, CommonType {
                             public ComparablePath(Supplier<Path<E>> path, CriteriaBuilder builder) {
                                 super(path, builder);
                             }
                         }
 
                         public static class ComparableExp<E extends Comparable<? super E>>
-                                extends AnyExp<E> implements ComparableExpression<E, Expression<E>>, %2$s {
+                                extends AnyExp<E> implements ComparableExpression<E, Expression<E>>, CommonType {
                             public ComparableExp(Supplier<Expression<E>> expression, CriteriaBuilder builder) {
                                 super(expression, builder);
                             }
                         }
 
-                        public static class StringPath extends AnyPath<String> implements StringExpression<Path<String>>, %2$s {
+                        public static class StringPath extends AnyPath<String> implements StringExpression<Path<String>>, CommonType {
                             public StringPath(Supplier<Path<String>> path, CriteriaBuilder builder) {
                                 super(path, builder);
                             }
                         }
 
-                        public static class StringExp extends AnyExp<String> implements StringExpression<Expression<String>>, %2$s {
+                        public static class StringExp extends AnyExp<String> implements StringExpression<Expression<String>>, CommonType {
                             public StringExp(Supplier<Expression<String>> expression, CriteriaBuilder builder) {
                                 super(expression, builder);
                             }
                         }
 
-                        public static class BooleanPath extends AnyPath<Boolean> implements BooleanExpression<Path<Boolean>>, %2$s {
+                        public static class BooleanPath extends AnyPath<Boolean> implements BooleanExpression<Path<Boolean>>, CommonType {
                             public BooleanPath(Supplier<Path<Boolean>> path, CriteriaBuilder builder) {
                                 super(path, builder);
                             }
                         }
-                        public static class BooleanExp extends AnyExp<Boolean> implements BooleanExpression<Expression<Boolean>>, %2$s {
+                        public static class BooleanExp extends AnyExp<Boolean> implements BooleanExpression<Expression<Boolean>>, CommonType {
                             public BooleanExp(Supplier<Expression<Boolean>> expression, CriteriaBuilder builder) {
                                 super(expression, builder);
                             }
                         }
 
-                        public static class NumberPath<T extends Number> extends AnyPath<T> implements NumberExpression<T, Path<T>>, %2$s {
+                        public static class NumberPath<T extends Number> extends AnyPath<T> implements NumberExpression<T, Path<T>>, CommonType {
                             public NumberPath(Supplier<Path<T>> path, CriteriaBuilder builder) {
                                 super(path, builder);
                             }
                         }
 
-                        public static class NumberExp<T extends Number> extends AnyExp<T> implements NumberExpression<T, Expression<T>>, %2$s {
+                        public static class NumberExp<T extends Number> extends AnyExp<T> implements NumberExpression<T, Expression<T>>, CommonType {
                             public NumberExp(Supplier<Expression<T>> expression, CriteriaBuilder builder) {
                                 super(expression, builder);
                             }
                         }
 
 
-                        public static class AnyCollectionExp<C extends Collection<?>, T extends Expression<C>> implements AnyCollectionExpression<C, T>, %2$s {
+                        public static class AnyCollectionExp<C extends Collection<?>, T extends Expression<C>> implements AnyCollectionExpression<C, T>, CommonType {
                             private final Supplier<T> expression;
                             private final CriteriaBuilder builder;
                             public AnyCollectionExp(Supplier<T> expression, CriteriaBuilder builder) {
@@ -324,7 +325,7 @@ public class ApiClassWriter {
                         }
 
                         public static class CollectionExp<E, C extends Collection<E>, T extends Expression<C>>
-                                extends AnyCollectionExp<C, T> implements CollectionExpression<E, C, T>, %2$s {
+                                extends AnyCollectionExp<C, T> implements CollectionExpression<E, C, T>, CommonType {
                             public CollectionExp(Supplier<T> expression, CriteriaBuilder builder) {
                                 super(expression, builder);
                             }
@@ -332,32 +333,20 @@ public class ApiClassWriter {
 
                         // ------------------------------------------------------------------------
 
-                        public interface AnyExpression<E, T extends Expression<E>> extends Supplier<T>, %2$s {
+                        public interface AnyExpression<E, T extends Expression<E>> extends Supplier<T>, CommonType {
                             T get();
-                            default Predicate eq(Expression<?> y) {
-                                return builder().equal(get(), y);
-                            }
-                            default Predicate eq(Object y) {
-                                return isEmpty(y) ? null : builder().equal(get(), y);
-                            }
-                            default Predicate ne(Expression<?> y) {
-                                return builder().notEqual(get(), y);
-                            }
-                            default Predicate ne(Object y) {
-                                return isEmpty(y) ? null : builder().notEqual(get(), y);
-                            }
-                            default Predicate isNull(Expression<?> x) {
-                                return builder().isNull(get());
-                            }
-                            default Predicate nonNull() {
-                                return builder().isNotNull(get());
-                            }
+                            default Predicate eq(Expression<?> y) { return builder().equal(get(), y); }
+                            default Predicate eq(Object y) { return isEmpty(y) ? null : builder().equal(get(), y); }
+                            default Predicate ne(Expression<?> y) { return builder().notEqual(get(), y); }
+                            default Predicate ne(Object y) { return isEmpty(y) ? null : builder().notEqual(get(), y); }
+                            default Predicate isNull(Expression<?> x) { return builder().isNull(get()); }
+                            default Predicate nonNull() { return builder().isNotNull(get()); }
                             default Order asc() { return builder().asc(get()); }
                             default Order desc() { return builder().desc(get()); }
                         }
 
                         public interface ComparableExpression<E extends Comparable<? super E>, T extends Expression<E>>
-                                extends Supplier<T>, AnyExpression<E, T> {
+                                extends Supplier<T>, AnyExpression<E, T>, CommonType {
                             T get();
                             default Predicate gt(Expression<? extends E> y) { return builder().greaterThan(get(), y); }
                             default Predicate gt(E y) { return isEmpty(y) ? null : builder().greaterThan(get(), y); }
@@ -369,20 +358,15 @@ public class ApiClassWriter {
                             default Predicate le(E y) { return isEmpty(y) ? null : builder().lessThanOrEqualTo(get(), y); }
                             default Predicate between(Expression<? extends E> x, Expression<? extends E> y) { return builder().between(get(), x, y); }
                             default Predicate between(E x, E y) {
-                                if (isEmpty(x) && isEmpty(y)) {
-                                    return null;
-                                } else if (isEmpty(y)) {
-                                    return ge(x);
-                                } else if (isEmpty(x)) {
-                                    return le(y);
-                                } else {
-                                    return builder().between(get(), x, y);
-                                }
+                                return (isEmpty(x) && isEmpty(y)) ? null
+                                    : isEmpty(y) ? ge(x)
+                                    : isEmpty(x) ? le(y)
+                                    : builder().between(get(), x, y);
                             }
                         }
 
                         public interface StringExpression<T extends Expression<String>>
-                                extends Supplier<T>, AnyExpression<String, T>, ComparableExpression<String, T> {
+                                extends Supplier<T>, AnyExpression<String, T>, ComparableExpression<String, T>, CommonType {
                             T get();
                             default Predicate like(Expression<String> pattern) { return builder().like(get(), pattern, '\\\\'); }
                             default Predicate like(String pattern) { return isEmpty(pattern) ? null : builder().like(get(), escaped(pattern), '\\\\'); }
@@ -401,14 +385,14 @@ public class ApiClassWriter {
                         }
 
                         public interface BooleanExpression<T extends Expression<Boolean>>
-                                extends Supplier<T>, AnyExpression<Boolean, T>, ComparableExpression<Boolean, T> {
+                                extends Supplier<T>, AnyExpression<Boolean, T>, ComparableExpression<Boolean, T>, CommonType {
                             T get();
                             default Predicate isTrue() { return builder().isTrue(get()); }
                             default Predicate isFalse() { return builder().isFalse(get()); }
                         }
 
                         public interface NumberExpression<E extends Number, T extends Expression<E>>
-                                extends Supplier<T>, AnyExpression<E, T> {
+                                extends Supplier<T>, AnyExpression<E, T>, CommonType {
                             T get();
                             default Predicate gt(Expression<? extends Number> y) { return builder().gt(get(), y); }
                             default Predicate gt(Number y) { return Objects.isNull(y) ? null : builder().gt(get(), y); }
@@ -421,7 +405,7 @@ public class ApiClassWriter {
                         }
 
                         public interface AnyCollectionExpression<C extends Collection<?>, T extends Expression<C>>
-                                extends Supplier<T>, AnyExpression<C, T> {
+                                extends Supplier<T>, AnyExpression<C, T>, CommonType {
                             T get();
                             default Predicate isEmpty() { return builder().isEmpty(get()); }
                             default Predicate isNotEmpty() { return builder().isNotEmpty(get()); }
@@ -429,7 +413,7 @@ public class ApiClassWriter {
                         }
 
                         public interface CollectionExpression<E, C extends Collection<E>, T extends Expression<C>>
-                                extends Supplier<T>, AnyExpression<C, T>, AnyCollectionExpression<C, T> {
+                                extends Supplier<T>, AnyExpression<C, T>, AnyCollectionExpression<C, T>, CommonType {
                             T get();
                             default Predicate isMember(Expression<E> elem) { return builder().isMember(elem, get()); }
                             default Predicate isMember(E elem) { return Objects.isNull(elem) ? null : builder().isMember(elem, get()); }
@@ -437,20 +421,15 @@ public class ApiClassWriter {
                             default Predicate isNotMember(E elem) { return Objects.isNull(elem) ? null : builder().isMember(elem, get()); }
                         }
 
-                        public interface MapKeyPath<K> extends Supplier<Path<K>> {
+                        public interface MapKeyPath<K> extends Supplier<Path<K>>, CommonType {
                             Path<K> key();
                         }
-                        public interface MapValuePath<V> extends Supplier<Path<V>> {
+                        public interface MapValuePath<V> extends Supplier<Path<V>>, CommonType {
                             Path<V> key();
                         }
+
                         private static boolean isEmpty(Object obj) {
-                            if (Objects.isNull(obj)) {
-                                return true;
-                            }
-                            if (obj instanceof String str) {
-                                return str.isEmpty();
-                            }
-                            return false;
+                            return Objects.isNull(obj) || (obj instanceof String str && str.isEmpty());
                         }
 
                     }

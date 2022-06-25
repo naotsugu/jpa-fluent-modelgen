@@ -47,9 +47,6 @@ public class Context {
     /** Mode of debug. */
     private final boolean debug;
 
-    /** Add criteria option. */
-    private final boolean addCriteria;
-
     /** Add repository option. */
     private final boolean addRepository;
 
@@ -61,15 +58,13 @@ public class Context {
      * Private constructor.
      * @param pe the annotation processing environment
      * @param debug the mode of debug
-     * @param addCriteria the mode of add criteria
      * @param addRepository the mode of add repository
      */
-    protected Context(ProcessingEnvironment pe, boolean debug, boolean addCriteria, boolean addRepository) {
+    protected Context(ProcessingEnvironment pe, boolean debug, boolean addRepository) {
         this.pe = pe;
         this.generatedModelClasses = new HashSet<>();
         this.repositoryTraits = new HashSet<>();
         this.debug = debug;
-        this.addCriteria = addCriteria;
         this.addRepository = addRepository;
         this.jakarta = true;
     }
@@ -79,13 +74,11 @@ public class Context {
      * Create the context instance.
      * @param pe processing environment
      * @param debug the mode of debug
-     * @param addCriteria the mode of add criteria
      * @param addRepository the mode of add repository
      * @return the context
      */
-    public static Context of(ProcessingEnvironment pe,
-            boolean debug, boolean addCriteria, boolean addRepository) {
-        return new Context(pe, debug, addCriteria, addRepository);
+    public static Context of(ProcessingEnvironment pe, boolean debug, boolean addRepository) {
+        return new Context(pe, debug, addRepository);
     }
 
 
@@ -197,20 +190,11 @@ public class Context {
      * Format the given format string with args.
      * @param format the format string
      * @param args the arguments referenced by the format specifiers in this string.
-     * @return
+     * @return the formatted string
      */
     private String formatted(String format, Object... args) {
         return Arrays.stream(args).map(Object::toString)
             .reduce(format, (str, arg) -> str.replaceFirst("\\{}", arg));
-    }
-
-
-    /**
-     * Get the option fo add criteria.
-     * @return the option fo add criteria
-     */
-    public boolean isAddCriteria() {
-        return addCriteria;
     }
 
 

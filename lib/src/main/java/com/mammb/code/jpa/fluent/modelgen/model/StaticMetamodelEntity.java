@@ -24,7 +24,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -49,6 +51,9 @@ public class StaticMetamodelEntity {
     /** Static metamodel type attributes. */
     private final List<StaticMetamodelAttribute> attributes;
 
+    /** Static metamodel type attributes. */
+    private final List<StaticMetamodelAttribute> parentAttributes;
+
 
     /**
      * Private constructor.
@@ -59,6 +64,7 @@ public class StaticMetamodelEntity {
         this.context = context;
         this.element = element;
         this.attributes = attributes(context, element.getEnclosedElements());
+        this.parentAttributes = parentAttributes(context, element);
         context.setJakarta(annotationTypes(element).contains(ANNOTATION_TYPE));
     }
 
@@ -165,6 +171,18 @@ public class StaticMetamodelEntity {
 
 
     /**
+     * Get the static metamodel attribute list.
+     * Include super class attribute.
+     * @return the static metamodel attribute list
+     */
+    public List<StaticMetamodelAttribute> getAllAttributes() {
+        var ret = new ArrayList<>(parentAttributes);
+        ret.addAll(attributes);
+        return ret;
+    }
+
+
+    /**
      * Gets whether the target element has a static metamodel annotation.
      * @param element the target element
      * @return If the target element has a static metamodel annotation, return {@code true}.
@@ -212,8 +230,8 @@ public class StaticMetamodelEntity {
 
 
     /**
-     * Create StaticMetamodelAttributes from given the enclosed elements
-     * @param context context of processing
+     * Create StaticMetamodelAttributes from the given enclosed elements
+     * @param context the context of processing
      * @param enclosedElements the enclosed elements
      * @return the list of StaticMetamodelAttributes
      */
@@ -223,6 +241,28 @@ public class StaticMetamodelEntity {
                       || e.asType().toString().startsWith(AttributeType.PACKAGE_NAME_LEGACY))
             .map(e -> StaticMetamodelAttribute.of(context, e))
             .toList();
+    }
+
+
+    /**
+     * Create StaticMetamodelAttributes from the given typeElement super class.
+     * @param context the context of processing
+     * @param element the static metamodel type element
+     * @return the list of StaticMetamodelAttributes
+     */
+    private static List<StaticMetamodelAttribute> parentAttributes(Context context, TypeElement element) {
+        List<StaticMetamodelAttribute> attributes = new ArrayList<>();
+        TypeMirror superclass = element.getSuperclass();
+        while (Objects.nonNull(superclass)) {
+            Element elem = context.getTypeUtils().asElement(superclass);
+            if (isStaticMetamodel(elem) && elem instanceof TypeElement typeElement) {
+                attributes.addAll(attributes(context, typeElement.getEnclosedElements()));
+                superclass = typeElement.getSuperclass();
+            } else {
+                break;
+            }
+        }
+        return attributes;
     }
 
 

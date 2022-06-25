@@ -81,26 +81,6 @@ public class TypeArgument {
 
 
     /**
-     * Gets whether {@link PersistenceType} is a structure or not.
-     * @return if {@link PersistenceType} is a structure, then {@code true}
-     */
-    public boolean isStruct() {
-        return getPersistenceType() == PersistenceType.ENTITY
-            || getPersistenceType() == PersistenceType.EMBEDDABLE
-            || getPersistenceType() == PersistenceType.MAPPED_SUPERCLASS;
-    }
-
-
-    /**
-     * Gets whether {@link PersistenceType} is a basic or not.
-     * @return if {@link PersistenceType} is a basic, then {@code true}
-     */
-    public boolean isBasic() {
-        return getPersistenceType() == PersistenceType.BASIC;
-    }
-
-
-    /**
      * Gets whether {@link PersistenceType} is a string.
      * @return if {@link PersistenceType} is a string, then {@code true}
      */
