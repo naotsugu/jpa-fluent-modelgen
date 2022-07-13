@@ -62,7 +62,7 @@ public enum AttributeType {
 
     /**
      * Determines if it is SingularAttribute or not.
-     * @return if it is SingularAttribute, return {@code true}
+     * @return {@code true} if it is SingularAttribute
      */
     public boolean isSingular() {
         return this == SINGULAR_ATTRIBUTE;
@@ -71,7 +71,7 @@ public enum AttributeType {
 
     /**
      * Determines if it is ListAttribute or not.
-     * @return if it is ListAttribute, return {@code true}
+     * @return {@code true} if it is ListAttribute
      */
     public boolean isList() {
         return this == LIST_ATTRIBUTE;
@@ -80,7 +80,7 @@ public enum AttributeType {
 
     /**
      * Determines if it is SetAttribute or not.
-     * @return if it is SetAttribute, return {@code true}
+     * @return {@code true} if it is SetAttribute
      */
     public boolean isSet() {
         return this == SET_ATTRIBUTE;
@@ -89,7 +89,7 @@ public enum AttributeType {
 
     /**
      * Determines if it is CollectionAttribute or not.
-     * @return if it is CollectionAttribute, return {@code true}
+     * @return {@code true} if it is CollectionAttribute
      */
     public boolean isCollection() {
         return this == COLLECTION_ATTRIBUTE;
@@ -98,7 +98,7 @@ public enum AttributeType {
 
     /**
      * Determines if it is MapAttribute or not.
-     * @return if it is MapAttribute, return {@code true}
+     * @return {@code true} if it is MapAttribute
      */
     public boolean isMap() {
         return this == MAP_ATTRIBUTE;

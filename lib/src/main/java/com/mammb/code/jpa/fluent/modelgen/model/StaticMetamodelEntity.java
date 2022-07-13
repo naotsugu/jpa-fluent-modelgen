@@ -15,7 +15,7 @@
  */
 package com.mammb.code.jpa.fluent.modelgen.model;
 
-import com.mammb.code.jpa.fluent.modelgen.Context;
+import com.mammb.code.jpa.fluent.modelgen.ModelContext;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -43,7 +43,7 @@ public class StaticMetamodelEntity {
     public static final String ANNOTATION_TYPE_LEGACY = "javax.persistence.metamodel.StaticMetamodel";
 
     /** Context of processing. */
-    private final Context context;
+    private final ModelContext context;
 
     /** Static metamodel type element. */
     private final TypeElement element;
@@ -60,7 +60,7 @@ public class StaticMetamodelEntity {
      * @param context the context of processing
      * @param element the static metamodel type element
      */
-    protected StaticMetamodelEntity(Context context, TypeElement element) {
+    protected StaticMetamodelEntity(ModelContext context, TypeElement element) {
         this.context = context;
         this.element = element;
         this.attributes = attributes(context, element.getEnclosedElements());
@@ -75,7 +75,7 @@ public class StaticMetamodelEntity {
      * @param element the static metamodel type element
      * @return StaticMetamodelEntity
      */
-    public static Optional<StaticMetamodelEntity> of(Context context, Element element) {
+    public static Optional<StaticMetamodelEntity> of(ModelContext context, Element element) {
         return (isStaticMetamodel(element) && element instanceof TypeElement typeElement)
             ? Optional.of(new StaticMetamodelEntity(context, typeElement))
             : Optional.empty();
@@ -235,7 +235,7 @@ public class StaticMetamodelEntity {
      * @param enclosedElements the enclosed elements
      * @return the list of StaticMetamodelAttributes
      */
-    private static List<StaticMetamodelAttribute> attributes(Context context, List<? extends Element> enclosedElements) {
+    private static List<StaticMetamodelAttribute> attributes(ModelContext context, List<? extends Element> enclosedElements) {
         return ElementFilter.fieldsIn(enclosedElements).stream()
             .filter(e -> e.asType().toString().startsWith(AttributeType.PACKAGE_NAME)
                       || e.asType().toString().startsWith(AttributeType.PACKAGE_NAME_LEGACY))
@@ -250,7 +250,7 @@ public class StaticMetamodelEntity {
      * @param element the static metamodel type element
      * @return the list of StaticMetamodelAttributes
      */
-    private static List<StaticMetamodelAttribute> parentAttributes(Context context, TypeElement element) {
+    private static List<StaticMetamodelAttribute> parentAttributes(ModelContext context, TypeElement element) {
         List<StaticMetamodelAttribute> attributes = new ArrayList<>();
         TypeMirror superclass = element.getSuperclass();
         while (Objects.nonNull(superclass)) {

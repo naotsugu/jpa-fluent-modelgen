@@ -15,21 +15,17 @@
  */
 package com.mammb.code.jpa.fluent.modelgen;
 
-import com.mammb.code.jpa.fluent.modelgen.model.RepositoryTraitType;
-import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelEntity;
-
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 
 /**
- * Context of metamodel enhance process.
+ * Context of annotation processing.
  *
  * @author Naotsugu Kobayashi
  */
@@ -38,65 +34,31 @@ public class Context {
     /** Annotation processing environment. */
     private final ProcessingEnvironment pe;
 
-    /** Generated model classes holder. */
-    private final Collection<StaticMetamodelEntity> generatedModelClasses;
-
-    /** RepositoryRootTypes. */
-    private final Collection<RepositoryTraitType> repositoryTraits;
-
     /** Mode of debug. */
     private final boolean debug;
 
-    /** Add repository option. */
-    private final boolean addRepository;
-
-    /** Mode of jakarta or javax. */
-    private boolean jakarta;
+    /** Generated classes(fqcn) holder. */
+    private final Collection<String> generatedClasses;
 
 
     /**
      * Private constructor.
      * @param pe the annotation processing environment
      * @param debug the mode of debug
-     * @param addRepository the mode of add repository
      */
-    protected Context(ProcessingEnvironment pe, boolean debug, boolean addRepository) {
+    public Context(ProcessingEnvironment pe, boolean debug) {
         this.pe = pe;
-        this.generatedModelClasses = new HashSet<>();
-        this.repositoryTraits = new HashSet<>();
         this.debug = debug;
-        this.addRepository = addRepository;
-        this.jakarta = true;
+        this.generatedClasses = new ArrayList<>();
     }
 
 
     /**
-     * Create the context instance.
-     * @param pe processing environment
-     * @param debug the mode of debug
-     * @param addRepository the mode of add repository
-     * @return the context
+     * Get the annotation processing environment.
+     * @return the annotation processing environment
      */
-    public static Context of(ProcessingEnvironment pe, boolean debug, boolean addRepository) {
-        return new Context(pe, debug, addRepository);
-    }
-
-
-    /**
-     * Add a repositoryRootType.
-     * @param repositoryRootType {@link RepositoryTraitType}
-     */
-    public void addRepositoryTraitType(RepositoryTraitType repositoryRootType) {
-        repositoryTraits.add(repositoryRootType);
-    }
-
-
-    /**
-     * Get the repository trait types.
-     * @return the repository trait types
-     */
-    public List<RepositoryTraitType> getRepositoryTraitTypes() {
-        return List.copyOf(repositoryTraits);
+    protected ProcessingEnvironment pe() {
+        return pe;
     }
 
 
@@ -124,34 +86,6 @@ public class Context {
      */
     public Types getTypeUtils() {
         return pe.getTypeUtils();
-    }
-
-
-    /**
-     * Add the given metamodel as generated.
-     * @param entity the {@link StaticMetamodelEntity}
-     */
-    void addGenerated(StaticMetamodelEntity entity) {
-        generatedModelClasses.add(entity);
-    }
-
-
-    /**
-     * Gets whether generatedModelClasses are present.
-     * @return {@code true} if generated model classes are present.
-     */
-    boolean hasGeneratedModel() {
-        return !generatedModelClasses.isEmpty();
-    }
-
-
-    /**
-     * Get whether the given qualified name has already been generated.
-     * @param name the qualified name of metamodel
-     * @return {@code true} if already generated
-     */
-    boolean isAlreadyGenerated(String name) {
-        return generatedModelClasses.stream().anyMatch(entity -> entity.getQualifiedName().equals(name));
     }
 
 
@@ -199,38 +133,21 @@ public class Context {
 
 
     /**
-     * Get the option fo add repository.
-     * @return the option fo add repository
+     * Add the given model as generated.
+     * @param fqcn the generated class fqcn
      */
-    public boolean isAddRepository() {
-        return addRepository;
+    public void addGenerated(String fqcn) {
+        generatedClasses.add(fqcn);
     }
 
 
     /**
-     * Get jakarta
-     * @return jakarta
+     * Get whether the given qualified name has already been generated.
+     * @param fqcn the qualified name of model
+     * @return {@code true} if already generated
      */
-    public boolean isJakarta() {
-        return jakarta;
-    }
-
-
-    /**
-     * Set jakarta
-     * @param jakarta jakarta
-     */
-    public void setJakarta(boolean jakarta) {
-        this.jakarta = jakarta;
-    }
-
-
-    /**
-     * Get the generated model classes.
-     * @return the generated model classes
-     */
-    public Collection<StaticMetamodelEntity> getGeneratedModelClasses() {
-        return List.copyOf(generatedModelClasses);
+    public boolean isAlreadyGenerated(String fqcn) {
+        return generatedClasses.contains(fqcn);
     }
 
 }

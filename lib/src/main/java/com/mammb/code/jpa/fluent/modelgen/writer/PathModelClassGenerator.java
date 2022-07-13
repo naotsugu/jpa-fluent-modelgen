@@ -15,7 +15,7 @@
  */
 package com.mammb.code.jpa.fluent.modelgen.writer;
 
-import com.mammb.code.jpa.fluent.modelgen.Context;
+import com.mammb.code.jpa.fluent.modelgen.ModelContext;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelAttribute;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelEntity;
 
@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public class PathModelClassGenerator extends AttributeClassGenerator {
 
-    private PathModelClassGenerator(Context context, StaticMetamodelEntity entity, ImportBuilder imports) {
+    private PathModelClassGenerator(ModelContext context, StaticMetamodelEntity entity, ImportBuilder imports) {
         super(context, entity, imports);
     }
 
@@ -40,7 +40,7 @@ public class PathModelClassGenerator extends AttributeClassGenerator {
      * @param imports the import sentences
      * @return Class writer
      */
-    public static PathModelClassGenerator of(Context context, StaticMetamodelEntity entity, ImportBuilder imports) {
+    public static PathModelClassGenerator of(ModelContext context, StaticMetamodelEntity entity, ImportBuilder imports) {
         return new PathModelClassGenerator(context, entity, imports);
     }
 
@@ -50,16 +50,16 @@ public class PathModelClassGenerator extends AttributeClassGenerator {
         return Template.of("""
             public static class Path_ implements Supplier<Path<$EntityClass$>>, Criteria.AnyExpression<$EntityClass$, Path<$EntityClass$>> {
                 private final Supplier<Path<$EntityClass$>> path;
-                private final CriteriaQuery<?> query;
+                private final AbstractQuery<?> query;
                 private final CriteriaBuilder builder;
-                public Path_(Supplier<Path<$EntityClass$>> path, CriteriaQuery<?> query, CriteriaBuilder builder) {
+                public Path_(Supplier<Path<$EntityClass$>> path, AbstractQuery<?> query, CriteriaBuilder builder) {
                     this.path = path;
                     this.query = query;
                     this.builder = builder;
                 }
                 @Override public Path<$EntityClass$> get() { return path.get(); }
                 @Override public CriteriaBuilder builder() { return builder; }
-                public CriteriaQuery<?> query() { return query; }
+                public AbstractQuery<?> query() { return query; }
                 $AttributeMethods$
             }
             """);

@@ -15,7 +15,7 @@
  */
 package com.mammb.code.jpa.fluent.modelgen.writer;
 
-import com.mammb.code.jpa.fluent.modelgen.Context;
+import com.mammb.code.jpa.fluent.modelgen.ModelContext;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelAttribute;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelEntity;
 
@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public class RootModelClassGenerator extends AttributeClassGenerator {
 
-    private RootModelClassGenerator(Context context, StaticMetamodelEntity entity, ImportBuilder imports) {
+    private RootModelClassGenerator(ModelContext context, StaticMetamodelEntity entity, ImportBuilder imports) {
         super(context, entity, imports);
     }
 
@@ -40,7 +40,7 @@ public class RootModelClassGenerator extends AttributeClassGenerator {
      * @param imports the import sentences
      * @return Class writer
      */
-    public static RootModelClassGenerator of(Context context, StaticMetamodelEntity entity, ImportBuilder imports) {
+    public static RootModelClassGenerator of(ModelContext context, StaticMetamodelEntity entity, ImportBuilder imports) {
         return new RootModelClassGenerator(context, entity, imports);
     }
 
@@ -48,18 +48,21 @@ public class RootModelClassGenerator extends AttributeClassGenerator {
     @Override
     protected Template classTemplate() {
         return Template.of("""
-            public static class Root_ implements RootAware<$EntityClass$>, Criteria.AnyExpression<$EntityClass$, Root<$EntityClass$>> {
+            public static class Root_ implements RootAware<$EntityClass$> {
                 private final Root<$EntityClass$> root;
-                private final CriteriaQuery<?> query;
+                private final AbstractQuery<?> query;
                 private final CriteriaBuilder builder;
-                public Root_(Root<$EntityClass$> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+                public Root_(Root<$EntityClass$> root, AbstractQuery<?> query, CriteriaBuilder builder) {
                     this.root = root;
                     this.query = query;
                     this.builder = builder;
                 }
                 @Override public Root<$EntityClass$> get() { return root; }
                 @Override public CriteriaBuilder builder() { return builder; }
-                public CriteriaQuery<?> query() { return query; }
+                @Override public AbstractQuery<?> query() { return query; }
+                @Override public Root_ with(Root<$EntityClass$> root, AbstractQuery<?> query) { return new Root_(root, query, builder()); }
+                @Override public Class<$EntityClass$> type() { return $EntityClass$.class; }
+
                 $AttributeMethods$
             }
             """);

@@ -43,10 +43,10 @@ import java.util.Set;
     RepositoryTraitType.ANNOTATION_TYPE
 })
 @SupportedOptions({
-    JpaMetaModelEnhanceProcessor.DEBUG_OPTION,
-    JpaMetaModelEnhanceProcessor.ADD_REPOSITORY,
+    JpaModelProcessor.DEBUG_OPTION,
+    JpaModelProcessor.ADD_REPOSITORY,
 })
-public class JpaMetaModelEnhanceProcessor extends AbstractProcessor {
+public class JpaModelProcessor extends AbstractProcessor {
 
     /** Debug option. */
     public static final String DEBUG_OPTION = "debug";
@@ -55,19 +55,16 @@ public class JpaMetaModelEnhanceProcessor extends AbstractProcessor {
     public static final String ADD_REPOSITORY = "addRepository";
 
     /** Context of processing. */
-    private Context context;
-
-    /** Annotation processing round. */
-    private int round = 0;
+    private ModelContext context;
 
 
     @Override
     public void init(ProcessingEnvironment env) {
 
         super.init(env);
-        this.context = Context.of(env,
-            Boolean.parseBoolean(env.getOptions().getOrDefault(JpaMetaModelEnhanceProcessor.DEBUG_OPTION, "false")),
-            Boolean.parseBoolean(env.getOptions().getOrDefault(JpaMetaModelEnhanceProcessor.ADD_REPOSITORY, "false")));
+        this.context = ModelContext.of(env,
+            Boolean.parseBoolean(env.getOptions().getOrDefault(JpaModelProcessor.DEBUG_OPTION, "false")),
+            Boolean.parseBoolean(env.getOptions().getOrDefault(JpaModelProcessor.ADD_REPOSITORY, "true")));
 
         var version = getClass().getPackage().getImplementationVersion();
         context.logInfo("JPA Static-Metamodel Enhance Generator {}", (Objects.isNull(version) ? "" : version));
@@ -83,8 +80,6 @@ public class JpaMetaModelEnhanceProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-
-        context.logDebug("### Round : {}", ++round);
 
         if (roundEnv.errorRaised() || roundEnv.processingOver() || annotations.isEmpty()) {
             return false;

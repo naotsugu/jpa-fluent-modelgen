@@ -23,9 +23,14 @@ import java.util.Map;
  */
 public class Template {
 
+    /** template string value. */
     private String string;
 
 
+    /**
+     * Create the template from given string.
+     * @param string template string
+     */
     private Template(String string) {
         this.string = string;
     }
@@ -243,7 +248,7 @@ public class Template {
      * @param str the Target string
      * @return the index at which the character appears for the first time
      */
-    private static int firstCharIndexOf(String str) {
+    public static int firstCharIndexOf(String str) {
         for (int i = 0; i < str.length(); i++) {
             if (!Character.isWhitespace(str.charAt(i))) {
                 return i;

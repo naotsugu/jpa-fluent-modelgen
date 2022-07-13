@@ -15,7 +15,7 @@
  */
 package com.mammb.code.jpa.fluent.modelgen.writer;
 
-import com.mammb.code.jpa.fluent.modelgen.Context;
+import com.mammb.code.jpa.fluent.modelgen.ModelContext;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelAttribute;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelEntity;
 
@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public class JoinModelClassGenerator extends AttributeClassGenerator {
 
-    private JoinModelClassGenerator(Context context, StaticMetamodelEntity entity, ImportBuilder imports) {
+    private JoinModelClassGenerator(ModelContext context, StaticMetamodelEntity entity, ImportBuilder imports) {
         super(context, entity, imports);
     }
 
@@ -40,7 +40,7 @@ public class JoinModelClassGenerator extends AttributeClassGenerator {
      * @param imports the import sentences
      * @return Class writer
      */
-    public static JoinModelClassGenerator of(Context context, StaticMetamodelEntity entity, ImportBuilder imports) {
+    public static JoinModelClassGenerator of(ModelContext context, StaticMetamodelEntity entity, ImportBuilder imports) {
         return new JoinModelClassGenerator(context, entity, imports);
     }
 
@@ -50,16 +50,16 @@ public class JoinModelClassGenerator extends AttributeClassGenerator {
         return Template.of("""
             static class Join_ implements Supplier<Join<?, $EntityClass$>>, Criteria.AnyExpression<$EntityClass$, Join<?, $EntityClass$>> {
                 private final Supplier<Join<?, $EntityClass$>> join;
-                protected final CriteriaQuery<?> query;
+                protected final AbstractQuery<?> query;
                 protected final CriteriaBuilder builder;
-                public Join_(Supplier<Join<?, $EntityClass$>> join, CriteriaQuery<?> query, CriteriaBuilder builder) {
+                public Join_(Supplier<Join<?, $EntityClass$>> join, AbstractQuery<?> query, CriteriaBuilder builder) {
                     this.join = join;
                     this.query = query;
                     this.builder = builder;
                 }
                 @Override public Join<?, $EntityClass$> get() { return join.get(); }
                 @Override public CriteriaBuilder builder() { return builder; }
-                public CriteriaQuery<?> query() { return query; }
+                public AbstractQuery<?> query() { return query; }
                 $AttributeMethods$
             }
             """);
