@@ -15,7 +15,7 @@
  */
 package com.mammb.code.jpa.fluent.modelgen.writer;
 
-import com.mammb.code.jpa.fluent.modelgen.Context;
+import com.mammb.code.jpa.fluent.modelgen.ModelContext;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelAttribute;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelEntity;
 
@@ -32,7 +32,7 @@ import java.util.Objects;
 public abstract class AttributeClassGenerator {
 
     /** Context of processing. */
-    private final Context context;
+    private final ModelContext context;
 
     /** Representation of static metamodel. */
     private final StaticMetamodelEntity entity;
@@ -47,7 +47,7 @@ public abstract class AttributeClassGenerator {
      * @param entity the representation of static metamodel
      * @param imports the import sentences
      */
-    protected AttributeClassGenerator(Context context, StaticMetamodelEntity entity, ImportBuilder imports) {
+    protected AttributeClassGenerator(ModelContext context, StaticMetamodelEntity entity, ImportBuilder imports) {
         this.context = context;
         this.entity = entity;
         this.imports = imports;
@@ -91,7 +91,8 @@ public abstract class AttributeClassGenerator {
                 collectionAttribute(attr, map, sb);
             }
         }
-        return sb.toString();
+        var ret = sb.toString();
+        return ret.substring(Template.firstCharIndexOf(ret));
     }
 
 
@@ -152,7 +153,7 @@ public abstract class AttributeClassGenerator {
         } else if (attr.getValueType().isBoolean()) {
             return "Criteria.BooleanPath";
         } else if (attr.getValueType().isNumber()) {
-            return "Criteria.NumberPath";
+            return "Criteria.NumberPath<" + imports.add(attr.getValueType().getName()) + ">";
         } else if (attr.getValueType().isComparable()) {
             return "Criteria.ComparablePath<" + imports.add(attr.getValueType().getName()) + ">";
         } else {

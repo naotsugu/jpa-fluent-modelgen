@@ -15,7 +15,7 @@
  */
 package com.mammb.code.jpa.fluent.modelgen.model;
 
-import com.mammb.code.jpa.fluent.modelgen.Context;
+import com.mammb.code.jpa.fluent.modelgen.ModelContext;
 import com.mammb.code.jpa.fluent.modelgen.writer.ImportBuilder;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -40,7 +40,7 @@ public class RepositoryTraitType {
     public static final String ANNOTATION_TYPE = "com.mammb.code.jpa.core.RepositoryTrait";
 
     /** Context of processing. */
-    private final Context context;
+    private final ModelContext context;
 
     /** The type element of repository trait. */
     private final TypeElement element;
@@ -54,7 +54,7 @@ public class RepositoryTraitType {
      * @param context the context of processing
      * @param element the repository root type element
      */
-    protected RepositoryTraitType(Context context, TypeElement element) {
+    protected RepositoryTraitType(ModelContext context, TypeElement element) {
         this.context = context;
         this.element = element;
         this.typeParameters = List.copyOf(element.getTypeParameters());
@@ -67,7 +67,7 @@ public class RepositoryTraitType {
      * @param element the static metamodel type element
      * @return RepositoryRootType
      */
-    public static Optional<RepositoryTraitType> of(final Context context, final Element element) {
+    public static Optional<RepositoryTraitType> of(final ModelContext context, final Element element) {
         return (isRepositoryTraitType(element) && element instanceof TypeElement typeElement)
             ? Optional.of(new RepositoryTraitType(context, typeElement))
             : Optional.empty();

@@ -1,1 +1,2 @@
-com.mammb.code.jpa.fluent.modelgen.JpaMetaModelEnhanceProcessor
+com.mammb.code.jpa.fluent.modelgen.JpaModelProcessor
+com.mammb.code.jpa.fluent.modelgen.MapperModelProcessor

@@ -15,8 +15,8 @@
  */
 package com.mammb.code.jpa.fluent.modelgen.writer;
 
-import com.mammb.code.jpa.fluent.modelgen.Context;
-import com.mammb.code.jpa.fluent.modelgen.JpaMetaModelEnhanceProcessor;
+import com.mammb.code.jpa.fluent.modelgen.JpaModelProcessor;
+import com.mammb.code.jpa.fluent.modelgen.ModelContext;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelEntity;
 
 import javax.annotation.processing.FilerException;
@@ -30,7 +30,7 @@ import java.io.PrintWriter;
 public class ModelClassWriter {
 
     /** Context of processing. */
-    private final Context context;
+    private final ModelContext context;
 
     /** Representation of static metamodel. */
     private final StaticMetamodelEntity entity;
@@ -44,7 +44,7 @@ public class ModelClassWriter {
      * @param context the context of processing
      * @param entity the representation of static metamodel
      */
-    protected ModelClassWriter(Context context, StaticMetamodelEntity entity) {
+    protected ModelClassWriter(ModelContext context, StaticMetamodelEntity entity) {
         this.context = context;
         this.entity = entity;
         this.imports = ImportBuilder.of(entity.getPackageName());
@@ -57,7 +57,7 @@ public class ModelClassWriter {
      * @param entity the static metamodel entity
      * @return Class writer
      */
-    public static ModelClassWriter of(Context context, StaticMetamodelEntity entity) {
+    public static ModelClassWriter of(ModelContext context, StaticMetamodelEntity entity) {
         return new ModelClassWriter(context, entity);
     }
 
@@ -96,6 +96,8 @@ public class ModelClassWriter {
     private void writeImportTo(PrintWriter pw) {
         imports.add("jakarta.persistence.criteria.CriteriaBuilder");
         imports.add("jakarta.persistence.criteria.CriteriaQuery");
+        imports.add("jakarta.persistence.criteria.Subquery");
+        imports.add("jakarta.persistence.criteria.AbstractQuery");
         imports.add("jakarta.persistence.criteria.Expression");
         imports.add("jakarta.persistence.criteria.Predicate");
         imports.add("jakarta.persistence.criteria.Root");
@@ -127,13 +129,12 @@ public class ModelClassWriter {
                 }
                 public static RootSource<$ClassName$, Root_> root() {
                     return new RootSource<$ClassName$, Root_>() {
-                        @Override public Root_ root(CriteriaQuery<?> query, CriteriaBuilder builder) {
-                            return new Root_(query.from(rootClass()), query, builder);
+                        @Override public Root_ root(Root<$ClassName$> source, AbstractQuery<?> query, CriteriaBuilder builder) {
+                            return new Root_(source, query, builder);
                         }
                         @Override public Class<$ClassName$> rootClass() { return $ClassName$.class; }
                     };
                 }
-
                 $RootClass$
 
                 $JoinClass$
@@ -141,7 +142,7 @@ public class ModelClassWriter {
                 $PathClass$
             }
             """).bind(
-            "$GeneratorClass$", JpaMetaModelEnhanceProcessor.class.getName(),
+            "$GeneratorClass$", JpaModelProcessor.class.getName(),
             "$ClassName$", entity.getTargetEntityName(),
             "$RootClass$", RootModelClassGenerator.of(context, entity, imports).generate(),
             "$JoinClass$", JoinModelClassGenerator.of(context, entity, imports).generate(),

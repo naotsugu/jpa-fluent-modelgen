@@ -15,8 +15,8 @@
  */
 package com.mammb.code.jpa.fluent.modelgen.writer;
 
-import com.mammb.code.jpa.fluent.modelgen.Context;
-import com.mammb.code.jpa.fluent.modelgen.JpaMetaModelEnhanceProcessor;
+import com.mammb.code.jpa.fluent.modelgen.JpaModelProcessor;
+import com.mammb.code.jpa.fluent.modelgen.ModelContext;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelEntity;
 
 import javax.annotation.processing.FilerException;
@@ -31,7 +31,7 @@ import java.util.Objects;
 public class RepositoryClassWriter {
 
     /** Context of processing. */
-    private final Context context;
+    private final ModelContext context;
 
     /** Representation of static metamodel. */
     private final StaticMetamodelEntity entity;
@@ -45,7 +45,7 @@ public class RepositoryClassWriter {
      * @param context the context of processing
      * @param entity the representation of static metamodel
      */
-    protected RepositoryClassWriter(Context context, StaticMetamodelEntity entity) {
+    protected RepositoryClassWriter(ModelContext context, StaticMetamodelEntity entity) {
         this.context = context;
         this.entity = entity;
         this.imports = ImportBuilder.of(entity.getPackageName());
@@ -58,7 +58,7 @@ public class RepositoryClassWriter {
      * @param entity the representation of static metamodel
      * @return Root class factory writer
      */
-    public static RepositoryClassWriter of(Context context, StaticMetamodelEntity entity) {
+    public static RepositoryClassWriter of(ModelContext context, StaticMetamodelEntity entity) {
         return new RepositoryClassWriter(context, entity);
     }
 
@@ -103,7 +103,7 @@ public class RepositoryClassWriter {
                 pw.println(imports.generateImports(context.isJakarta()));
                 pw.println();
 
-                pw.println("@Generated(value = \"%s\")".formatted(JpaMetaModelEnhanceProcessor.class.getName()));
+                pw.println("@Generated(value = \"%s\")".formatted(JpaModelProcessor.class.getName()));
                 pw.println(body);
                 pw.flush();
             }

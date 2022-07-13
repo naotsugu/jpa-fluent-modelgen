@@ -15,9 +15,6 @@
  */
 package com.mammb.code.jpa.fluent.modelgen.writer;
 
-import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelEntity;
-
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -28,17 +25,6 @@ public abstract class PackageNames {
 
     /** the default package name. */
     public static final String DEFAULT_PACKAGE_NAME = "com.mammb.code.jpa.core";
-
-
-    /**
-     * Get the common package name.
-     * @param modelEntities the metamodel entities
-     * @return the common package name
-     */
-    public static String createCommonPackageName(Collection<StaticMetamodelEntity> modelEntities) {
-        return createCommonPackageName(modelEntities.stream()
-            .map(StaticMetamodelEntity::getQualifiedName).toList());
-    }
 
 
     /**

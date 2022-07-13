@@ -15,7 +15,7 @@
  */
 package com.mammb.code.jpa.fluent.modelgen.model;
 
-import com.mammb.code.jpa.fluent.modelgen.Context;
+import com.mammb.code.jpa.fluent.modelgen.ModelContext;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
@@ -28,7 +28,7 @@ import java.util.Objects;
 public class TypeArgument {
 
     /** Context of processing. */
-    private final Context context;
+    private final ModelContext context;
 
     /** Type argument mirror. */
     private final TypeMirror typeMirror;
@@ -43,7 +43,7 @@ public class TypeArgument {
     /**
      * Private constructor.
      */
-    private TypeArgument(Context context, TypeMirror typeMirror) {
+    private TypeArgument(ModelContext context, TypeMirror typeMirror) {
         this.context = context;
         this.typeMirror = typeMirror;
         this.typeMirrorElement = context.getTypeUtils().asElement(typeMirror);
@@ -57,7 +57,7 @@ public class TypeArgument {
      * @param typeMirror type argument mirror
      * @return the type argument
      */
-    public static TypeArgument of(Context context, TypeMirror typeMirror) {
+    public static TypeArgument of(ModelContext context, TypeMirror typeMirror) {
         return new TypeArgument(context, typeMirror);
     }
 
