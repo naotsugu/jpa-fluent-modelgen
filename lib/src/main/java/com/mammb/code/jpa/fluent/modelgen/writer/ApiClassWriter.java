@@ -423,6 +423,14 @@ public class ApiClassWriter {
                             default Predicate ne(Object y) { return isEmpty(y) ? null : builder().notEqual(get(), y); }
                             default Predicate isNull(Expression<?> x) { return builder().isNull(get()); }
                             default Predicate nonNull() { return builder().isNotNull(get()); }
+                            default Predicate in(AnyExpression<E, ?>... values) {
+                                return get().in(Arrays.stream(values).map(AnyExpression::get).toArray(Expression<?>[]::new));
+                            }
+                            default Predicate in(Expression<?>... values) { return get().in(values); }
+                            default Predicate in(Expression<Collection<?>> values) { return get().in(values); }
+                            default Predicate in(Collection<?> values) { return get().in(values); }
+                            default Predicate in(Object... values) { return get().in(values); }
+
                             default Order asc() { return builder().asc(get()); }
                             default Order desc() { return builder().desc(get()); }
                         }
