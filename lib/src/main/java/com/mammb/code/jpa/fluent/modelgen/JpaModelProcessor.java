@@ -29,8 +29,13 @@ import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 /**
  * Main annotation processor.
@@ -87,12 +92,8 @@ public class JpaModelProcessor extends AbstractProcessor {
 
         try {
 
-            for (Element element : roundEnv.getRootElements()) {
-                StaticMetamodelEntity.of(context, element)
-                    .ifPresent(this::createMetaModelClasses);
-                RepositoryTraitType.of(context, element)
-                    .ifPresent(context::addRepositoryTraitType);
-            }
+            getStaticMetamodelEntities(roundEnv).forEach(this::createMetaModelClasses);
+            getRepositoryTraitTypes(roundEnv).forEach(context::addRepositoryTraitType);
 
             if (context.hasGeneratedModel()) {
                 ApiClassWriter.of(context).writeClasses();
@@ -131,6 +132,30 @@ public class JpaModelProcessor extends AbstractProcessor {
         ModelClassWriter.of(context, entity).writeFile();
         context.addGenerated(entity);
 
+    }
+
+
+    private Collection<StaticMetamodelEntity> getStaticMetamodelEntities(RoundEnvironment roundEnv) {
+
+        var models = roundEnv.getRootElements().stream()
+            .map(elm -> StaticMetamodelEntity.of(context, elm))
+            .flatMap(Optional::stream)
+            .collect(Collectors.toMap(StaticMetamodelEntity::getTargetEntityQualifiedName, UnaryOperator.identity()));
+
+        models.values().stream()
+            .filter(model -> model.getSuperEntityQualifiedName().isPresent())
+            .forEach(model -> models.get(model.getSuperEntityQualifiedName().get()).addChild(model));
+
+        return models.values();
+
+    }
+
+
+    private Collection<RepositoryTraitType> getRepositoryTraitTypes(RoundEnvironment roundEnv) {
+        return roundEnv.getRootElements().stream()
+            .map(elm -> RepositoryTraitType.of(context, elm))
+            .flatMap(Optional::stream)
+            .toList();
     }
 
 }

@@ -48,6 +48,7 @@ public class ApiClassWriter {
     /** The name of Typed class. */
     public static final String TYPED = "Typed";
 
+
     /** Context of processing. */
     private final ModelContext context;
 
@@ -303,6 +304,7 @@ public class ApiClassWriter {
                 imports.add("java.util.regex.Pattern");
                 imports.add("java.math.BigDecimal");
                 imports.add("java.math.BigInteger");
+                imports.add("java.util.Arrays");
                 imports.add("java.util.Map");
 
                 pw.println(imports.generateImports(context.isJakarta()));
@@ -421,7 +423,7 @@ public class ApiClassWriter {
                             default Predicate ne(AnyExpression<E, ?> y) { return builder().notEqual(get(), y.get()); }
                             default Predicate ne(Expression<?> y) { return builder().notEqual(get(), y); }
                             default Predicate ne(Object y) { return isEmpty(y) ? null : builder().notEqual(get(), y); }
-                            default Predicate isNull(Expression<?> x) { return builder().isNull(get()); }
+                            default Predicate isNull() { return builder().isNull(get()); }
                             default Predicate nonNull() { return builder().isNotNull(get()); }
                             default Predicate in(AnyExpression<E, ?>... values) {
                                 return get().in(Arrays.stream(values).map(AnyExpression::get).toArray(Expression<?>[]::new));
@@ -625,10 +627,10 @@ public class ApiClassWriter {
 
                 pw.println("@Generated(value = \"%s\")".formatted(JpaModelProcessor.class.getName()));
                 pw.println("""
-                    public interface Typed<E> {
+                    public interface %1$s<E> {
                         Class<E> type();
                     }
-                   """.formatted(TYPED, ROOT_AWARE));
+                   """.formatted(TYPED));
                 pw.flush();
             }
 

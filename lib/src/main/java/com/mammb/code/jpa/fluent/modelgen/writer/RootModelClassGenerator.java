@@ -62,8 +62,8 @@ public class RootModelClassGenerator extends AttributeClassGenerator {
                 @Override public AbstractQuery<?> query() { return query; }
                 @Override public Root_ with(Root<$EntityClass$> root, AbstractQuery<?> query) { return new Root_(root, query, builder()); }
                 @Override public Class<$EntityClass$> type() { return $EntityClass$.class; }
-
                 $AttributeMethods$
+                $TreatMethods$
             }
             """);
     }
@@ -118,6 +118,16 @@ public class RootModelClassGenerator extends AttributeClassGenerator {
         sb.append(Template.of("""
             public Expression<Map<$KeyType$, $ValueType$>> get$AttributeName$() {
                 return get().get($EnclosingType$_.$attributeName$);
+            }
+        """).bind(map));
+    }
+
+
+    @Override
+    protected void treatMethods(Map<String, String> map, StringBuilder sb) {
+        sb.append(Template.of("""
+            public $DescendantEntityClass$Model.Root_ as$DescendantEntityClass$Model() {
+                return new $DescendantEntityClass$Model.Root_(builder().treat(get(), $DescendantEntityClass$.class), query(), builder());
             }
         """).bind(map));
     }
