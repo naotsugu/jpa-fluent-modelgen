@@ -91,11 +91,11 @@ public class MappersClassWriter {
 
                     public static <E, R extends RootAware<E>> Mapper<E, R, IntegerResult> integerResult(
                             Criteria.Selector<E, R, Integer> e1) {
-                        return Mapper.construct(IntegerResult.class, Arrays.asList(Selector.of(e1)));
+                        return Mapper.construct(IntegerResult.class, Arrays.asList(Selector.of(e1)), Grouping.empty());
                     }
                     public static <E, R extends RootAware<E>> Mapper<E, R, LongResult> longResult(
                             Criteria.Selector<E, R, Long> e1) {
-                        return Mapper.construct(LongResult.class, Arrays.asList(Selector.of(e1)));
+                        return Mapper.construct(LongResult.class, Arrays.asList(Selector.of(e1)), Grouping.empty());
                     }
 
                     $mapperMethods$
@@ -127,7 +127,11 @@ public class MappersClassWriter {
         return Template.of("""
             public static <E, R extends RootAware<E>> Mapper<E, R, $DtoClassName$> $dtoClassName$(
                     $MapperArgs$) {
-                return Mapper.construct($DtoClassName$.class, Arrays.asList($SelectorArgs$));
+                return Mapper.construct($DtoClassName$.class, Arrays.asList($SelectorArgs$), Grouping.empty());
+            }
+            public static <E, R extends RootAware<E>> Mapper<E, R, $DtoClassName$> $dtoClassName$(
+                    $MapperArgs$, Grouping<E, R> grouping) {
+                return Mapper.construct($DtoClassName$.class, Arrays.asList($SelectorArgs$), grouping);
             }
             """).bind(
             "$DtoClassName$", imports.add(type.getQualifiedName()),
@@ -160,6 +164,7 @@ public class MappersClassWriter {
         imports.add(ApiClassWriter.PACKAGE_NAME + ".RootAware");
         imports.add("com.mammb.code.jpa.fluent.query.Mapper");
         imports.add("com.mammb.code.jpa.fluent.query.Selector");
+        imports.add("com.mammb.code.jpa.fluent.query.Grouping");
     }
 
 }
