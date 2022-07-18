@@ -31,7 +31,7 @@ import java.util.Objects;
 public class ApiClassWriter {
 
     /** The name of package. */
-    public static final String PACKAGE_NAME = "com.mammb.code.jpa.core";
+    public static final String PACKAGE_NAME = "com.mammb.code.jpa.fluent.core";
 
     /** The name of BuilderAware class. */
     public static final String BUILDER_AWARE = "BuilderAware";
@@ -503,6 +503,11 @@ public class ApiClassWriter {
                             default Predicate lt(Number y) { return Objects.isNull(y) ? null : builder().lt(get(), y); }
                             default Predicate le(Expression<? extends Number> y) { return builder().le(get(), y); }
                             default Predicate le(Number y) { return Objects.isNull(y) ? null : builder().le(get(), y); }
+
+                            default NumberExp<E> sum() { return new NumberExp<>(() -> builder().sum(get()), builder()); }
+                            default NumberExp<E> max() { return new NumberExp<>(() -> builder().max(get()), builder()); }
+                            default NumberExp<E> min() { return new NumberExp<>(() -> builder().min(get()), builder()); }
+                            default NumberExp<Double> avg() { return new NumberExp<>(() -> builder().avg(get()), builder()); }
 
                             default Expression<Long> toLong() { return builder().toLong(get()); }
                             default Expression<Integer> toInteger() { return builder().toInteger(get()); }

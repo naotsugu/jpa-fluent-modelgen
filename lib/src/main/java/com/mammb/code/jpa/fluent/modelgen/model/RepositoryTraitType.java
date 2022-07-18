@@ -16,6 +16,7 @@
 package com.mammb.code.jpa.fluent.modelgen.model;
 
 import com.mammb.code.jpa.fluent.modelgen.ModelContext;
+import com.mammb.code.jpa.fluent.modelgen.writer.ApiClassWriter;
 import com.mammb.code.jpa.fluent.modelgen.writer.ImportBuilder;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -37,7 +38,7 @@ import java.util.Optional;
 public class RepositoryTraitType {
 
     /** Annotation type. */
-    public static final String ANNOTATION_TYPE = "com.mammb.code.jpa.core.RepositoryTrait";
+    public static final String ANNOTATION_TYPE = ApiClassWriter.PACKAGE_NAME + ".RepositoryTrait";
 
     /** Context of processing. */
     private final ModelContext context;
