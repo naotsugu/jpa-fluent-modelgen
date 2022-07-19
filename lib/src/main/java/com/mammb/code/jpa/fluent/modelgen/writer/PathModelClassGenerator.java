@@ -61,6 +61,7 @@ public class PathModelClassGenerator extends AttributeClassGenerator {
                 @Override public CriteriaBuilder builder() { return builder; }
                 public AbstractQuery<?> query() { return query; }
                 $AttributeMethods$
+                $TreatMethods$
             }
             """);
     }
@@ -99,6 +100,16 @@ public class PathModelClassGenerator extends AttributeClassGenerator {
         sb.append(Template.of("""
             public Expression<Map<$KeyType$", $ValueType$>> get$AttributeName$ {
                 return ((Path<$EnclosingType$>) get()).get($EnclosingType$_.$attributeName$);
+            }
+        """).bind(map));
+    }
+
+
+    @Override
+    protected void treatMethods(Map<String, String> map, StringBuilder sb) {
+        sb.append(Template.of("""
+            public $DescendantEntityClass$Model.Path_ as$DescendantEntityClass$Model() {
+                return new $DescendantEntityClass$Model.Path_(() -> builder().treat(get(), $DescendantEntityClass$.class), query(), builder());
             }
         """).bind(map));
     }

@@ -35,7 +35,7 @@ If you use `javax.persistence` API and Gradle Kotlin DSL, define annotation proc
 ```kotlin
 dependencies {
   annotationProcessor("org.hibernate:hibernate-jpamodelgen:5.6.9.Final")
-  annotationProcessor("com.mammb:jpa-fluent-modelgen:0.5.0")
+  annotationProcessor("com.mammb:jpa-fluent-modelgen:0.6.0")
 }
 ```
 
@@ -44,7 +44,7 @@ If you use `jakarta.persistence` API, do the following
 ```kotlin
 dependencies {
   annotationProcessor("org.hibernate.orm:hibernate-jpamodelgen:6.0.0.Final")
-  annotationProcessor("com.mammb:jpa-fluent-modelgen:0.5.0")
+  annotationProcessor("com.mammb:jpa-fluent-modelgen:0.6.0")
 }
 ```
 
@@ -101,4 +101,8 @@ public List<Customer> findByFirstNameAndOrganZip(String firstName, String code) 
 See `example/spring-boot` for more details.
 
 
+## Use with JPA Fluent Query
 
+When used with `JPA Fluent Query`, it allows for flexible query construction.
+
+See [JPA Fluent Query](https://github.com/naotsugu/jpa-fluent-query) for more details.

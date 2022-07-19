@@ -16,7 +16,6 @@
 package com.mammb.code.jpa.fluent.modelgen.model;
 
 import com.mammb.code.jpa.fluent.modelgen.ModelContext;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
@@ -25,6 +24,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -54,6 +54,9 @@ public class StaticMetamodelEntity {
     /** Static metamodel type attributes. */
     private final List<StaticMetamodelAttribute> parentAttributes;
 
+    /** Children staticMetamodelEntity. */
+    private final List<StaticMetamodelEntity> children;
+
 
     /**
      * Private constructor.
@@ -65,12 +68,13 @@ public class StaticMetamodelEntity {
         this.element = element;
         this.attributes = attributes(context, element.getEnclosedElements());
         this.parentAttributes = parentAttributes(context, element);
+        this.children = new ArrayList<>();
         context.setJakarta(annotationTypes(element).contains(ANNOTATION_TYPE));
     }
 
 
     /**
-     * Create the StaticMetamodelEntity.
+     * Create the {@link StaticMetamodelEntity} for the given element.
      * @param context the context of processing
      * @param element the static metamodel type element
      * @return StaticMetamodelEntity
@@ -114,21 +118,42 @@ public class StaticMetamodelEntity {
 
     /**
      * Get the superclass name of this static metamodel.
-     * @return the superclass name of this static metamodel. If the superclass is an Object, return {@code ""}.
+     * @return the superclass name of this static metamodel, if the superclass is an Object, return {@code ""}.
      */
     public String getSuperClass() {
         TypeMirror superClass = element.getSuperclass();
         return (Object.class.getCanonicalName().equals(superClass.toString())) ? "" : superClass.toString();
     }
 
+
     /**
      * Get the superclass name of this static metamodel target entity.
-     * @return the superclass name of this static metamodel target entity.
-     * If the superclass is an Object, return {@code ""}.
+     * e.g. {@code foo.Book_} -> {@code foo.Book}
+     * @return the superclass name of this static metamodel target entity,
+     * if the superclass is an Object, return {@code ""}.
      */
-    public String getSuperEntityQualifiedName() {
+    public String getSuperQualifiedName() {
         var name = getSuperClass();
         return name.isBlank() ? "" : name.substring(0, name.length() - 1);
+    }
+
+
+    /**
+     * Get the super entity fqcn, if the target entity of this static metamodel has a parent entity.
+     * @return the super entity fqcn. MappedSuperclass is not included.
+     */
+    public Optional<String> getSuperEntityQualifiedName() {
+        var name = getSuperQualifiedName();
+        if (name.isBlank()) {
+            return Optional.empty();
+        }
+        if (context.getElementUtils().getTypeElement(name).getAnnotationMirrors().stream()
+            .map(am -> am.getAnnotationType().toString())
+            .map(PersistenceType::of)
+            .anyMatch(PersistenceType::isEntity)) {
+            return Optional.of(name);
+        }
+        return Optional.empty();
     }
 
 
@@ -230,7 +255,7 @@ public class StaticMetamodelEntity {
 
 
     /**
-     * Create StaticMetamodelAttributes from the given enclosed elements
+     * Create the {@link StaticMetamodelAttribute}s from the given enclosed elements
      * @param context the context of processing
      * @param enclosedElements the enclosed elements
      * @return the list of StaticMetamodelAttributes
@@ -245,7 +270,7 @@ public class StaticMetamodelEntity {
 
 
     /**
-     * Create StaticMetamodelAttributes from the given typeElement super class.
+     * Create the {@link StaticMetamodelAttribute}s from the given typeElement super class.
      * @param context the context of processing
      * @param element the static metamodel type element
      * @return the list of StaticMetamodelAttributes
@@ -305,6 +330,28 @@ public class StaticMetamodelEntity {
             .findFirst()
             .or(() -> findIdField(context.getElementUtils().getTypeElement(element.getSuperclass().toString())));
 
+    }
+
+
+    /**
+     * Add the child {@link StaticMetamodelEntity}.
+     * @param child the child {@link StaticMetamodelEntity}
+     */
+    public void addChild(StaticMetamodelEntity child) {
+        children.add(child);
+    }
+
+
+    /**
+     * Get the descendants.
+     * @return the descendants
+     */
+    public List<StaticMetamodelEntity> getDescendants() {
+        List<StaticMetamodelEntity> ret = new ArrayList<>(children);
+        for (StaticMetamodelEntity e : children) {
+            ret.addAll(e.getDescendants());
+        }
+        return ret;
     }
 
 }

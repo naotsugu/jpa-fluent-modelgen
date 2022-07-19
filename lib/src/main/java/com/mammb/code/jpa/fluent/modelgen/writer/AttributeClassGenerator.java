@@ -19,6 +19,7 @@ import com.mammb.code.jpa.fluent.modelgen.ModelContext;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelAttribute;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelEntity;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -59,9 +60,23 @@ public abstract class AttributeClassGenerator {
      * @return the generated class definition
      */
     public String generate() {
+        var entityName = imports.add(entity.getTargetEntityQualifiedName());
         return classTemplate().bind(
-            "$EntityClass$", imports.add(entity.getTargetEntityQualifiedName()),
-            "$AttributeMethods$", attributeMethods()).getIndentedValue(1);
+            "$EntityClass$", entityName,
+            "$TreatMethods$", treatMethods(),
+            "$AttributeMethods$", attributeMethods()
+        ).getIndentedValue(1);
+    }
+
+
+    private String treatMethods() {
+        StringBuilder sb = new StringBuilder();
+        for (StaticMetamodelEntity e : entity.getDescendants()) {
+            var map = Map.of("$DescendantEntityClass$", imports.add(e.getTargetEntityQualifiedName()));
+            treatMethods(map, sb);
+        }
+        var ret = sb.toString();
+        return ret.isBlank() ? "" : ret.substring(Template.firstCharIndexOf(ret));
     }
 
 
@@ -128,6 +143,14 @@ public abstract class AttributeClassGenerator {
      * @param sb the {@link StringBuilder}
      */
     protected abstract void mapAttribute(StaticMetamodelAttribute attr, Map<String, String> map, StringBuilder sb);
+
+
+    /**
+     * Write the treat methods.
+     * @param map the map of binding value
+     * @param sb the {@link StringBuilder}
+     */
+    protected abstract void treatMethods(Map<String, String> map, StringBuilder sb);
 
 
     /**

@@ -22,7 +22,7 @@ import javax.lang.model.type.DeclaredType;
 import java.util.List;
 
 /**
- * Representation of static metamodel attributes.
+ * Representation of the static metamodel attributes.
  *
  * @author Naotsugu Kobayashi
  */
@@ -80,7 +80,7 @@ public class StaticMetamodelAttribute implements MetamodelAttribute {
      * Create a new {@link StaticMetamodelAttribute} instance with the given entity.
      * @param context context of processing
      * @param element the attribute element
-     * @return static metamodel attribute
+     * @return the static metamodel attribute
      */
     public static StaticMetamodelAttribute of(ModelContext context, Element element) {
         return new StaticMetamodelAttribute(context, element);
@@ -119,7 +119,7 @@ public class StaticMetamodelAttribute implements MetamodelAttribute {
 
     /**
      * Get the type arguments of attribute.
-     * e.g. foo.bar.Customer, java.lang.String
+     * e.g. {@code foo.bar.Customer, java.lang.String}
      * @return the type arguments
      */
     public List<String> getTypeArgumentsString() {

@@ -31,7 +31,7 @@ import java.util.Objects;
 public class ApiClassWriter {
 
     /** The name of package. */
-    public static final String PACKAGE_NAME = "com.mammb.code.jpa.core";
+    public static final String PACKAGE_NAME = "com.mammb.code.jpa.fluent.core";
 
     /** The name of BuilderAware class. */
     public static final String BUILDER_AWARE = "BuilderAware";
@@ -47,6 +47,7 @@ public class ApiClassWriter {
     public static final String ROOT_SOURCE = "RootSource";
     /** The name of Typed class. */
     public static final String TYPED = "Typed";
+
 
     /** Context of processing. */
     private final ModelContext context;
@@ -303,6 +304,7 @@ public class ApiClassWriter {
                 imports.add("java.util.regex.Pattern");
                 imports.add("java.math.BigDecimal");
                 imports.add("java.math.BigInteger");
+                imports.add("java.util.Arrays");
                 imports.add("java.util.Map");
 
                 pw.println(imports.generateImports(context.isJakarta()));
@@ -421,8 +423,16 @@ public class ApiClassWriter {
                             default Predicate ne(AnyExpression<E, ?> y) { return builder().notEqual(get(), y.get()); }
                             default Predicate ne(Expression<?> y) { return builder().notEqual(get(), y); }
                             default Predicate ne(Object y) { return isEmpty(y) ? null : builder().notEqual(get(), y); }
-                            default Predicate isNull(Expression<?> x) { return builder().isNull(get()); }
+                            default Predicate isNull() { return builder().isNull(get()); }
                             default Predicate nonNull() { return builder().isNotNull(get()); }
+                            default Predicate in(AnyExpression<E, ?>... values) {
+                                return get().in(Arrays.stream(values).map(AnyExpression::get).toArray(Expression<?>[]::new));
+                            }
+                            default Predicate in(Expression<?>... values) { return get().in(values); }
+                            default Predicate in(Expression<Collection<?>> values) { return get().in(values); }
+                            default Predicate in(Collection<?> values) { return get().in(values); }
+                            default Predicate in(Object... values) { return get().in(values); }
+
                             default Order asc() { return builder().asc(get()); }
                             default Order desc() { return builder().desc(get()); }
                         }
@@ -493,6 +503,11 @@ public class ApiClassWriter {
                             default Predicate lt(Number y) { return Objects.isNull(y) ? null : builder().lt(get(), y); }
                             default Predicate le(Expression<? extends Number> y) { return builder().le(get(), y); }
                             default Predicate le(Number y) { return Objects.isNull(y) ? null : builder().le(get(), y); }
+
+                            default NumberExp<E> sum() { return new NumberExp<>(() -> builder().sum(get()), builder()); }
+                            default NumberExp<E> max() { return new NumberExp<>(() -> builder().max(get()), builder()); }
+                            default NumberExp<E> min() { return new NumberExp<>(() -> builder().min(get()), builder()); }
+                            default NumberExp<Double> avg() { return new NumberExp<>(() -> builder().avg(get()), builder()); }
 
                             default Expression<Long> toLong() { return builder().toLong(get()); }
                             default Expression<Integer> toInteger() { return builder().toInteger(get()); }
@@ -617,10 +632,10 @@ public class ApiClassWriter {
 
                 pw.println("@Generated(value = \"%s\")".formatted(JpaModelProcessor.class.getName()));
                 pw.println("""
-                    public interface Typed<E> {
+                    public interface %1$s<E> {
                         Class<E> type();
                     }
-                   """.formatted(TYPED, ROOT_AWARE));
+                   """.formatted(TYPED));
                 pw.flush();
             }
 

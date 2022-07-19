@@ -61,6 +61,7 @@ public class JoinModelClassGenerator extends AttributeClassGenerator {
                 @Override public CriteriaBuilder builder() { return builder; }
                 public AbstractQuery<?> query() { return query; }
                 $AttributeMethods$
+                $TreatMethods$
             }
             """);
     }
@@ -128,6 +129,16 @@ public class JoinModelClassGenerator extends AttributeClassGenerator {
         sb.append(Template.of("""
             public Expression<Map<$KeyType$, $ValueType$>> get$AttributeName$() {
                 return get().get($EnclosingType$_.$attributeName$);
+            }
+        """).bind(map));
+    }
+
+
+    @Override
+    protected void treatMethods(Map<String, String> map, StringBuilder sb) {
+        sb.append(Template.of("""
+            public $DescendantEntityClass$Model.Join_ as$DescendantEntityClass$Model() {
+                return new $DescendantEntityClass$Model.Join_(() -> builder().treat(get(), $DescendantEntityClass$.class), query(), builder());
             }
         """).bind(map));
     }

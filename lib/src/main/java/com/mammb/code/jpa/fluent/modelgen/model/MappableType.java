@@ -16,6 +16,7 @@
 package com.mammb.code.jpa.fluent.modelgen.model;
 
 import com.mammb.code.jpa.fluent.modelgen.Context;
+import com.mammb.code.jpa.fluent.modelgen.writer.ApiClassWriter;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -38,7 +39,7 @@ import java.util.Optional;
 public class MappableType {
 
     /** Annotation type. */
-    public static final String ANNOTATION_TYPE = "com.mammb.code.jpa.core.Mappable";
+    public static final String ANNOTATION_TYPE = ApiClassWriter.PACKAGE_NAME + ".Mappable";
 
     /** Context of processing. */
     private final Context context;

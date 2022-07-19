@@ -56,7 +56,8 @@ public class MapperModelProcessor extends AbstractProcessor {
         super.init(env);
 
         if (Objects.isNull(env.getElementUtils().getTypeElement("com.mammb.code.jpa.fluent.query.Mapper")) ||
-            Objects.isNull(env.getElementUtils().getTypeElement("com.mammb.code.jpa.fluent.query.Selector"))) {
+            Objects.isNull(env.getElementUtils().getTypeElement("com.mammb.code.jpa.fluent.query.Selector")) ||
+            Objects.isNull(env.getElementUtils().getTypeElement("com.mammb.code.jpa.fluent.query.Grouping"))) {
             return;
         }
 
