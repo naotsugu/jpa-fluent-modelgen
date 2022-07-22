@@ -19,6 +19,10 @@ import com.mammb.code.jpa.fluent.modelgen.ModelContext;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
+import java.time.chrono.ChronoLocalDateTime;
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalAdjuster;
 import java.util.Objects;
 
 /**
@@ -139,7 +143,8 @@ public class TypeArgument {
         return typeMirrorElement.getKind().isClass() &&
             context.getTypeUtils().isAssignable(
                 typeMirrorElement.asType(),
-                context.getElementUtils().getTypeElement(clazz.getCanonicalName()).asType());
+                context.getTypeUtils().erasure(
+                    context.getElementUtils().getTypeElement(clazz.getCanonicalName()).asType()));
     }
 
 }

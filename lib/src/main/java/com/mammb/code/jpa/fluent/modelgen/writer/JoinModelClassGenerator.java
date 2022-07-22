@@ -48,7 +48,7 @@ public class JoinModelClassGenerator extends AttributeClassGenerator {
     @Override
     protected Template classTemplate() {
         return Template.of("""
-            static class Join_ implements Supplier<Join<?, $EntityClass$>>, Criteria.AnyExpression<$EntityClass$, Join<?, $EntityClass$>> {
+            public static class Join_ implements Supplier<Join<?, $EntityClass$>>, Criteria.AnyExpression<$EntityClass$, Join<?, $EntityClass$>> {
                 private final Supplier<Join<?, $EntityClass$>> join;
                 protected final AbstractQuery<?> query;
                 protected final CriteriaBuilder builder;
