@@ -25,7 +25,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.util.SimpleAnnotationValueVisitor14;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -104,7 +106,7 @@ public class RepositoryTraitType {
         return name + typeParametersString()
             .replace("PK", "%1$s")
             .replace("E", "%2$s")
-            .replace("R", "%2$s_Root_<%2$s>");
+            .replace("R", "%2$sModel.Root_");
     }
 
 
@@ -142,25 +144,29 @@ public class RepositoryTraitType {
 
     /**
      * RepositoryTrait annotation value class name.
-     * FIXME use AnnotationValueVisitor
      * @param element The type element of repository trait
      * @return the target class names
      */
-    private static List<String> targetEntityQualifiedNames(Element element) {
-        // FIXME use AnnotationValueVisitor
+    private List<String> targetEntityQualifiedNames(Element element) {
+
+        var visitor = new SimpleAnnotationValueVisitor14<List<String>, Void>() {
+            @Override
+            public List<String> visitArray(List<? extends AnnotationValue> vals, Void p) {
+                return vals.stream().map(Object::toString)
+                    .filter(s -> s.endsWith(".class"))
+                    .map(s -> s.substring(0, s.lastIndexOf(".")))
+                    .toList();
+            }
+        };
         return element.getAnnotationMirrors().stream()
-            .filter(annotationMirror -> ANNOTATION_TYPE.equals(annotationMirror.getAnnotationType().toString()))
-            .map(annotationMirror -> annotationMirror.getElementValues().entrySet())
+            .filter(am -> ANNOTATION_TYPE.equals(am.getAnnotationType().toString()))
+            .map(am -> am.getElementValues().entrySet())
             .flatMap(Collection::stream)
-            .filter(e -> e.getKey().getSimpleName().toString().equals("value"))
+            .filter(e -> e.getKey().getSimpleName().toString().equals("targets"))
             .map(Map.Entry::getValue)
-            .map(AnnotationValue::getValue)
-            .map(List.class::cast)
-            .map(Object::toString)
-            .map(s -> List.of(s.split(",")))
-            .flatMap(Collection::stream)
-            .map(s -> s.substring(0, s.lastIndexOf(".")))
-            .toList();
+            .findFirst()
+            .map(av -> av.accept(visitor, null))
+            .orElse(Collections.emptyList());
     }
 
 }
