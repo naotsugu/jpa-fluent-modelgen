@@ -93,19 +93,19 @@ public class JoinModelClassGenerator extends AttributeClassGenerator {
         if (attr.getValueType().getPersistenceType().isStruct()) {
             sb.append(Template.of("""
                 public $ValueType$Model.Join_ join$AttributeName$() {
-                    return new $ValueType$Model.Join_(() -> get().join($EnclosingType$_.$attributeName$), query(), builder());
+                    return new $ValueType$Model.Join_(() -> ((Join<?, $EnclosingType$>)(Join<?, ?>) get()).join($EnclosingType$_.$attributeName$), query(), builder());
                 }
             """).bind(map));
         } else {
             sb.append(Template.of("""
                 public $AttributeJavaType$Join<T, $ValueType$> join$AttributeName$() {
-                    return ((Join<?, $EnclosingType$>) get()).join($EnclosingType$_.$attributeName$);
+                    return ((Join<?, $EnclosingType$>)(Join<?, ?>) get()).join($EnclosingType$_.$attributeName$);
                 }
             """).bind(map));
         }
         sb.append(Template.of("""
             public Criteria.CollectionExp<$ValueType$, $AttributeJavaType$<$ValueType$>, Expression<$AttributeJavaType$<$ValueType$>>> get$AttributeName$() {
-                return new Criteria.CollectionExp(() -> get().get($EnclosingType$_.$attributeName$), builder());
+                return new Criteria.CollectionExp(() -> ((Join<?, $EnclosingType$>)(Join<?, ?>) get()).get($EnclosingType$_.$attributeName$), builder());
             }
         """).bind(map));
     }
@@ -113,22 +113,10 @@ public class JoinModelClassGenerator extends AttributeClassGenerator {
 
     @Override
     protected void mapAttribute(StaticMetamodelAttribute attr, Map<String, String> map, StringBuilder sb) {
-        if (attr.getValueType().getPersistenceType().isStruct()) {
-            sb.append(Template.of("""
-                public $EnclosingType$Map.Join_ join$AttributeName$() {
-                    return new $EnclosingType$Map.Join_(() -> get().join($EnclosingType$_.$attributeName$), query(), builder());
-                }
-            """).bind(map));
-        } else {
-            sb.append(Template.of("""
-                public MapJoin<T, $KeyType$, $ValueType$> join$AttributeName$() {
-                    return get().join($EnclosingType$_.$attributeName$);
-                }
-            """).bind(map));
-        }
+        sb.append(Template.of(createMapJoin(attr.getKeyType(), attr.getValueType(), false)).bind(map));
         sb.append(Template.of("""
             public Expression<Map<$KeyType$, $ValueType$>> get$AttributeName$() {
-                return get().get($EnclosingType$_.$attributeName$);
+                return ((Join<?, $EnclosingType$>)(Join<?, ?>) get()).get($EnclosingType$_.$attributeName$);
             }
         """).bind(map));
     }

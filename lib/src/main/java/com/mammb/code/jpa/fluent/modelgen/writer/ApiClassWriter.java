@@ -312,6 +312,7 @@ public class ApiClassWriter {
 
                 pw.println("@Generated(value = \"%s\")".formatted(JpaModelProcessor.class.getName()));
                 pw.println("""
+                    @SuppressWarnings("unchecked")
                     public class %1$s {
 
                         public interface Selector<E, R extends RootAware<E>, U> {

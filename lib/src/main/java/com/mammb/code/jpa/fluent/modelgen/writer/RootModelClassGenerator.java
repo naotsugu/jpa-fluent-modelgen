@@ -94,13 +94,13 @@ public class RootModelClassGenerator extends AttributeClassGenerator {
         if (attr.getValueType().getPersistenceType().isStruct()) {
             sb.append(Template.of("""
                 public $ValueType$Model.Join_ join$AttributeName$() {
-                    return new $ValueType$Model.Join_(() -> get().join($EnclosingType$_.$attributeName$), query(), builder());
+                    return new $ValueType$Model.Join_(() -> ((Root<$EnclosingType$>)(Root<?>) get()).join($EnclosingType$_.$attributeName$), query(), builder());
                 }
             """).bind(map));
         }
         sb.append(Template.of("""
             public Criteria.CollectionExp<$ValueType$, $AttributeJavaType$<$ValueType$>, Expression<$AttributeJavaType$<$ValueType$>>> get$AttributeName$() {
-                return new Criteria.CollectionExp(() -> ((Root<$EnclosingType$>) get()).get($EnclosingType$_.$attributeName$), builder());
+                return new Criteria.CollectionExp(() -> ((Root<$EnclosingType$>)(Root<?>) get()).get($EnclosingType$_.$attributeName$), builder());
             }
         """).bind(map));
     }
@@ -108,16 +108,10 @@ public class RootModelClassGenerator extends AttributeClassGenerator {
 
     @Override
     protected void mapAttribute(StaticMetamodelAttribute attr, Map<String, String> map, StringBuilder sb) {
-        if (attr.getValueType().getPersistenceType().isStruct()) {
-            sb.append(Template.of("""
-                public $ValueType$Model.Join_ join$AttributeName$() {
-                    return new $ValueType$Model.Join_(() -> get().join($EnclosingType$_.$attributeName$),query(), builder());
-                }
-            """).bind(map));
-        }
+        sb.append(Template.of(createMapJoin(attr.getKeyType(), attr.getValueType(), true)).bind(map));
         sb.append(Template.of("""
             public Expression<Map<$KeyType$, $ValueType$>> get$AttributeName$() {
-                return get().get($EnclosingType$_.$attributeName$);
+                return ((Root<$EnclosingType$>)(Root<?>) get()).get($EnclosingType$_.$attributeName$);
             }
         """).bind(map));
     }

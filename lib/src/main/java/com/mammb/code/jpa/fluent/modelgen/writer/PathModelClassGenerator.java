@@ -89,7 +89,7 @@ public class PathModelClassGenerator extends AttributeClassGenerator {
     protected void collectionAttribute(StaticMetamodelAttribute attr, Map<String, String> map, StringBuilder sb) {
         sb.append(Template.of("""
             public Criteria.CollectionExp<$ValueType$, $AttributeJavaType$<$ValueType$>, Expression<$AttributeJavaType$<$ValueType$>>> get$AttributeName$() {
-                return new Criteria.CollectionExp(() -> get().get($EnclosingType$_.$attributeName$), builder());
+                return new Criteria.CollectionExp(() -> ((Path<$EnclosingType$>)(Path<?>) get()).get($EnclosingType$_.$attributeName$), builder());
             }
         """).bind(map));
     }
@@ -98,8 +98,8 @@ public class PathModelClassGenerator extends AttributeClassGenerator {
     @Override
     protected void mapAttribute(StaticMetamodelAttribute attr, Map<String, String> map, StringBuilder sb) {
         sb.append(Template.of("""
-            public Expression<Map<$KeyType$", $ValueType$>> get$AttributeName$ {
-                return ((Path<$EnclosingType$>) get()).get($EnclosingType$_.$attributeName$);
+            public Expression<Map<$KeyType$, $ValueType$>> get$AttributeName$() {
+                return ((Path<$EnclosingType$>)(Path<?>) get()).get($EnclosingType$_.$attributeName$);
             }
         """).bind(map));
     }

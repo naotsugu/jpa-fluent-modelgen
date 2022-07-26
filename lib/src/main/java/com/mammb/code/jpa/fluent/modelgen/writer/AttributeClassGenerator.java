@@ -18,8 +18,8 @@ package com.mammb.code.jpa.fluent.modelgen.writer;
 import com.mammb.code.jpa.fluent.modelgen.ModelContext;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelAttribute;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelEntity;
+import com.mammb.code.jpa.fluent.modelgen.model.TypeArgument;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -92,7 +92,7 @@ public abstract class AttributeClassGenerator {
                 "$KeyType$",           attr.getAttributeType().isMap() ? imports.add(attr.getKeyType().getName()) : "",
                 "$AttributeName$",     capitalize(attr.getName()),
                 "$attributeName$",     attr.getName(),
-                "$CriteriaPathClass$", criteriaPathClassName(attr),
+                "$CriteriaPathClass$", criteriaPathClassName(attr.getValueType()),
                 "$AttributeJavaType$", attr.getAttributeType().isList() ? imports.add("java.util.List")
                                      : attr.getAttributeType().isSet() ? imports.add("java.util.Set")
                                      : attr.getAttributeType().isCollection() ? imports.add("java.util.Collection")
@@ -167,21 +167,70 @@ public abstract class AttributeClassGenerator {
 
     /**
      * Get the criteria path class name from given attribute.
-     * @param attr the attribute
+     * @param val the type argument
      * @return the criteria path class name
      */
-    protected String criteriaPathClassName(StaticMetamodelAttribute attr) {
-        if (attr.getValueType().isString()) {
+    protected String criteriaPathClassName(TypeArgument val) {
+        if (val.isString()) {
             return "Criteria.StringPath";
-        } else if (attr.getValueType().isBoolean()) {
+        } else if (val.isBoolean()) {
             return "Criteria.BooleanPath";
-        } else if (attr.getValueType().isNumber()) {
-            return "Criteria.NumberPath<" + imports.add(attr.getValueType().getName()) + ">";
-        } else if (attr.getValueType().isComparable()) {
-            return "Criteria.ComparablePath<" + imports.add(attr.getValueType().getName()) + ">";
+        } else if (val.isNumber()) {
+            return "Criteria.NumberPath<" + imports.add(val.getName()) + ">";
+        } else if (val.isComparable()) {
+            return "Criteria.ComparablePath<" + imports.add(val.getName()) + ">";
         } else {
-            return "Criteria.AnyPath<" + imports.add(attr.getValueType().getName()) + ">";
+            return "Criteria.AnyPath<" + imports.add(val.getName()) + ">";
         }
+    }
+
+
+    /**
+     * Create the MapJoin.
+     * @param key The key of map
+     * @param val The value of map
+     * @param fromRoot is root?
+     * @return The MapJoin method string
+     */
+    protected String createMapJoin(TypeArgument key, TypeArgument val, boolean fromRoot) {
+
+        final String getSource = fromRoot
+            ? "((Root<$EnclosingType$>)(Root<?>) get())"
+            : "((Join<?, $EnclosingType$>)(Join<?, ?>) get())";
+
+        final String keyName = imports.add(key.getName());
+        final String keyPath = key.getPersistenceType().isStruct()
+            ? keyName + "Model.Path_"
+            : criteriaPathClassName(key);
+        final String keyPathClass = key.getPersistenceType().isStruct()
+            ? "new " + keyPath + "(() -> join.key(), query(), builder())"
+            : "new " + keyPath + "(() -> join.key(), builder())";
+
+        final String valName = imports.add(val.getName());
+        final String valPath = val.getPersistenceType().isStruct()
+            ? valName + "Model.Path_"
+            : criteriaPathClassName(val);
+        final String valPathClass = val.getPersistenceType().isStruct()
+            ? "new " + valPath + "(() -> join.value(), query(), builder())"
+            : "new " + valPath + "(() -> join.value(), builder())";
+
+        return Template.of("""
+            public Predicate join$AttributeName$(BiFunction<$keyPath$, $valPath$, Predicate> fun) {
+                MapJoin<$EnclosingType$, $keyName$, $valName$> join = $getSource$.join($EnclosingType$_.$attributeName$);
+                return fun.apply(
+                    $keyPathClass$,
+                    $valPathClass$
+                );
+            }
+        """).bind(
+            "$getSource$", getSource,
+            "$keyName$", keyName,
+            "$keyPath$", keyPath,
+            "$keyPathClass$", keyPathClass,
+            "$valName$", valName,
+            "$valPath$", valPath,
+            "$valPathClass$", valPathClass
+        ).toString();
     }
 
 }

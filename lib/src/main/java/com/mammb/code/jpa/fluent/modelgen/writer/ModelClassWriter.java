@@ -111,6 +111,7 @@ public class ModelClassWriter {
         imports.add("java.util.Map");
         imports.add("java.util.Set");
         imports.add("java.util.Collection");
+        imports.add("java.util.function.BiFunction");
         imports.add("java.util.function.Supplier");
         imports.add("javax.annotation.processing.Generated");
         imports.add(ApiClassWriter.PACKAGE_NAME + ".*;");
@@ -122,6 +123,7 @@ public class ModelClassWriter {
     private String generateBody() {
         return Template.of("""
             @Generated(value = "$GeneratorClass$")
+            @SuppressWarnings("unchecked")
             public class $ClassName$Model {
 
                 public static Root_ root(Root<$ClassName$> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
