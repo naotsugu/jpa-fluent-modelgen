@@ -19,7 +19,6 @@ import com.mammb.code.jpa.fluent.modelgen.ModelContext;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelAttribute;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelEntity;
 import com.mammb.code.jpa.fluent.modelgen.model.TypeArgument;
-
 import java.util.Map;
 import java.util.Objects;
 

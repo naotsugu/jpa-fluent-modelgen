@@ -88,6 +88,11 @@ public class MappersClassWriter {
 
                     public static record IntegerResult(Integer value) { }
                     public static record LongResult(Long value) { }
+                    public static record StringResult(String value) { }
+                    public static record BigDecimalResult(BigDecimal value) { }
+                    public static record DateResult(Date value) { }
+                    public static record LocalDateResult(LocalDate value) { }
+                    public static record LocalDateTimeResult(LocalDateTime value) { }
 
                     public static <E, R extends RootAware<E>> Mapper<E, R, IntegerResult> integerResult(
                             Criteria.Selector<E, R, Integer> e1) {
@@ -96,6 +101,26 @@ public class MappersClassWriter {
                     public static <E, R extends RootAware<E>> Mapper<E, R, LongResult> longResult(
                             Criteria.Selector<E, R, Long> e1) {
                         return Mapper.construct(LongResult.class, Arrays.asList(Selector.of(e1)), Grouping.empty());
+                    }
+                    public static <E, R extends RootAware<E>> Mapper<E, R, StringResult> stringResult(
+                            Criteria.Selector<E, R, String> e1) {
+                        return Mapper.construct(StringResult.class, Arrays.asList(Selector.of(e1)), Grouping.empty());
+                    }
+                    public static <E, R extends RootAware<E>> Mapper<E, R, BigDecimalResult> bigDecimalResult(
+                        Criteria.Selector<E, R, BigDecimal> e1) {
+                        return Mapper.construct(BigDecimalResult.class, Arrays.asList(Selector.of(e1)), Grouping.empty());
+                    }
+                    public static <E, R extends RootAware<E>> Mapper<E, R, DateResult> dateResult(
+                        Criteria.Selector<E, R, Date> e1) {
+                        return Mapper.construct(DateResult.class, Arrays.asList(Selector.of(e1)), Grouping.empty());
+                    }
+                    public static <E, R extends RootAware<E>> Mapper<E, R, LocalDateResult> localDateResult(
+                            Criteria.Selector<E, R, LocalDate> e1) {
+                        return Mapper.construct(LocalDateResult.class, Arrays.asList(Selector.of(e1)), Grouping.empty());
+                    }
+                    public static <E, R extends RootAware<E>> Mapper<E, R, LocalDateTimeResult> localDateTimeResult(
+                            Criteria.Selector<E, R, LocalDateTime> e1) {
+                        return Mapper.construct(LocalDateTimeResult.class, Arrays.asList(Selector.of(e1)), Grouping.empty());
                     }
 
                     $mapperMethods$
@@ -165,6 +190,11 @@ public class MappersClassWriter {
         imports.add("com.mammb.code.jpa.fluent.query.Mapper");
         imports.add("com.mammb.code.jpa.fluent.query.Selector");
         imports.add("com.mammb.code.jpa.fluent.query.Grouping");
+        imports.add("java.time.LocalDateTime");
+        imports.add("java.time.LocalDate");
+        imports.add("java.math.BigDecimal");
+        imports.add("java.util.Date");
+
     }
 
 }
