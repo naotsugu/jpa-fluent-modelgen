@@ -125,7 +125,7 @@ public class JoinModelClassGenerator extends AttributeClassGenerator {
     @Override
     protected void treatMethods(Map<String, String> map, StringBuilder sb) {
         sb.append(Template.of("""
-            public $DescendantEntityClass$Model.Join_ as$DescendantEntityClass$Model() {
+            public $DescendantEntityClass$Model.Join_ as$DescendantEntityClass$() {
                 return new $DescendantEntityClass$Model.Join_(() -> builder().treat(get(), $DescendantEntityClass$.class), query(), builder());
             }
         """).bind(map));
