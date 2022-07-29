@@ -32,7 +32,7 @@ tasks.named<Test>("test") {
 }
 
 group = "com.mammb"
-version = "0.7.0"
+version = "0.8.0"
 
 val sonatypeUsername: String? by project
 val sonatypePassword: String? by project

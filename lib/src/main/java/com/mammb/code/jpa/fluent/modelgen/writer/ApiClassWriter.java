@@ -342,7 +342,7 @@ public class ApiClassWriter {
                                 this.expression = expression;
                                 this.builder = builder;
                             }
-                            @Override public Expression<E> get() { return expression.get(); };
+                            @Override public Expression<E> get() { return expression.get(); }
                             @Override public CriteriaBuilder builder() { return builder; }
                         }
 
@@ -384,9 +384,7 @@ public class ApiClassWriter {
                         }
 
                         public static class NumberPath<T extends Number> extends AnyPath<T> implements NumberExpression<T, Path<T>>, CommonType {
-                            public NumberPath(Supplier<Path<T>> path, CriteriaBuilder builder) {
-                                super(path, builder);
-                            }
+                            public NumberPath(Supplier<Path<T>> path, CriteriaBuilder builder) { super(path, builder); }
                         }
 
                         public static class NumberExp<T extends Number> extends AnyExp<T> implements NumberExpression<T, Expression<T>>, CommonType {
@@ -394,7 +392,6 @@ public class ApiClassWriter {
                                 super(expression, builder);
                             }
                         }
-
 
                         public static class AnyCollectionExp<C extends Collection<?>, T extends Expression<C>> implements AnyCollectionExpression<C, T>, CommonType {
                             private final Supplier<T> expression;
@@ -433,9 +430,10 @@ public class ApiClassWriter {
                             default Predicate in(Expression<Collection<?>> values) { return get().in(values); }
                             default Predicate in(Collection<?> values) { return get().in(values); }
                             default Predicate in(Object... values) { return get().in(values); }
-
                             default Order asc() { return builder().asc(get()); }
                             default Order desc() { return builder().desc(get()); }
+                            default NumberExp<Long> count() { return new NumberExp<>(() -> builder().count(get()), builder()); }
+                            default NumberExp<Long> countDistinct() { return new NumberExp<>(() -> builder().countDistinct(get()), builder()); }
                         }
 
                         public interface ComparableExpression<E extends Comparable<? super E>, T extends Expression<E>>
@@ -456,6 +454,8 @@ public class ApiClassWriter {
                                     : isEmpty(x) ? le(y)
                                     : builder().between(get(), x, y);
                             }
+                            default ComparableExp<E> max() { return new ComparableExp<>(() -> builder().greatest(get()), builder()); }
+                            default ComparableExp<E> min() { return new ComparableExp<>(() -> builder().least(get()), builder()); }
                         }
 
                         public interface StringExpression<T extends Expression<String>>
@@ -555,7 +555,6 @@ public class ApiClassWriter {
                         private static boolean isEmpty(Object obj) {
                             return Objects.isNull(obj) || (obj instanceof String str && str.isEmpty());
                         }
-
                     }
                     """.formatted(CRITERIA, BUILDER_AWARE));
                 pw.flush();
