@@ -108,7 +108,7 @@ public class PathModelClassGenerator extends AttributeClassGenerator {
     @Override
     protected void treatMethods(Map<String, String> map, StringBuilder sb) {
         sb.append(Template.of("""
-            public $DescendantEntityClass$Model.Path_ as$DescendantEntityClass$Model() {
+            public $DescendantEntityClass$Model.Path_ as$DescendantEntityClass$() {
                 return new $DescendantEntityClass$Model.Path_(() -> builder().treat(get(), $DescendantEntityClass$.class), query(), builder());
             }
         """).bind(map));

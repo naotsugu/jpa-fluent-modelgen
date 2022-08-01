@@ -6,7 +6,6 @@ class JpaMetaModelEnhanceProcessorTest {
 
     @Test
     void test() {
-
     }
 
 }

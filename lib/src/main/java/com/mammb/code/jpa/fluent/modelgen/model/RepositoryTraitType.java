@@ -26,6 +26,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.SimpleAnnotationValueVisitor14;
+import javax.lang.model.util.SimpleAnnotationValueVisitor9;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -93,7 +94,13 @@ public class RepositoryTraitType {
      * @return the extends clause
      */
     public String createExtendsClause(StaticMetamodelEntity entity, ImportBuilder imports) {
+
         if (typeParameters.isEmpty()) {
+            return "";
+        }
+
+        if (excludesEntityQualifiedNames(element)
+            .contains(entity.getTargetEntityQualifiedName())) {
             return "";
         }
 
@@ -103,10 +110,16 @@ public class RepositoryTraitType {
         }
 
         var name = imports.add(element.toString());
-        return name + typeParametersString()
-            .replace("PK", "%1$s")
-            .replace("E", "%2$s")
-            .replace("R", "%2$sModel.Root_");
+        var typeParam = typeParametersString();
+        if (typeParam.matches("<\\w+,\\s*\\w+,\\s*\\w+>")) {
+            return name + "<%1$s, %2$s, %2$sModel.Root_>";
+        } else if (typeParam.matches("<\\w+,\\s*\\w+>")) {
+            return name + "<%1$s, %2$s>";
+        } else if (typeParam.matches("<\\w+>")) {
+            return name + "<%2$s>";
+        } else {
+            return name + typeParametersString();
+        }
     }
 
 
@@ -148,8 +161,23 @@ public class RepositoryTraitType {
      * @return the target class names
      */
     private List<String> targetEntityQualifiedNames(Element element) {
+        return attributeEntityQualifiedNames(element, "targets");
+    }
 
-        var visitor = new SimpleAnnotationValueVisitor14<List<String>, Void>() {
+
+    /**
+     * The excludes entity class name of the RepositoryTrait.
+     * @param element The type element of repository trait
+     * @return the excludes class names
+     */
+    private List<String> excludesEntityQualifiedNames(Element element) {
+        return attributeEntityQualifiedNames(element, "excludes");
+    }
+
+
+    private List<String> attributeEntityQualifiedNames(Element element, String annotationElementName) {
+
+        var visitor = new SimpleAnnotationValueVisitor9<List<String>, Void>() {
             @Override
             public List<String> visitArray(List<? extends AnnotationValue> vals, Void p) {
                 return vals.stream().map(Object::toString)
@@ -162,7 +190,7 @@ public class RepositoryTraitType {
             .filter(am -> ANNOTATION_TYPE.equals(am.getAnnotationType().toString()))
             .map(am -> am.getElementValues().entrySet())
             .flatMap(Collection::stream)
-            .filter(e -> e.getKey().getSimpleName().toString().equals("targets"))
+            .filter(e -> e.getKey().getSimpleName().toString().equals(annotationElementName))
             .map(Map.Entry::getValue)
             .findFirst()
             .map(av -> av.accept(visitor, null))
