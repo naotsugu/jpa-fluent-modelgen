@@ -20,17 +20,14 @@ import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelEntity;
 import com.mammb.code.jpa.fluent.modelgen.writer.ApiClassWriter;
 import com.mammb.code.jpa.fluent.modelgen.writer.ModelClassWriter;
 import com.mammb.code.jpa.fluent.modelgen.writer.RepositoryClassWriter;
-
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
