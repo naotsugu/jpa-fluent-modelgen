@@ -17,7 +17,6 @@ package com.mammb.code.jpa.fluent.modelgen;
 
 import com.mammb.code.jpa.fluent.modelgen.model.MappableType;
 import com.mammb.code.jpa.fluent.modelgen.writer.MappersClassWriter;
-
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;

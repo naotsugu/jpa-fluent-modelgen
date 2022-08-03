@@ -15,7 +15,7 @@
  */
 
 /**
- * jpa.fluent.modelgen
+ * jpa-fluent-modelgen.
  */
 module jpa.fluent.modelgen {
     exports com.mammb.code.jpa.fluent.modelgen;

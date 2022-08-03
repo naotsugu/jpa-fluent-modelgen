@@ -17,7 +17,6 @@ package com.mammb.code.jpa.fluent.modelgen;
 
 import com.mammb.code.jpa.fluent.modelgen.model.RepositoryTraitType;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelEntity;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import java.util.Collection;
 import java.util.HashSet;
