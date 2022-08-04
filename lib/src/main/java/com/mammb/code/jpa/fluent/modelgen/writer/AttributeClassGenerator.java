@@ -85,6 +85,16 @@ public abstract class AttributeClassGenerator {
 
         for (StaticMetamodelAttribute attr : entity.getAllAttributes()) {
 
+            if (attr.getEnclosingType().getPersistenceType().isStruct()) {
+                imports.add(attr.getEnclosingType().getName() + "_");
+            }
+            if (attr.getValueType().getPersistenceType().isStruct()) {
+                imports.add(attr.getValueType().getName() + "_");
+            }
+            if (attr.getAttributeType().isMap() && attr.getKeyType().getPersistenceType().isStruct()) {
+                imports.add(attr.getKeyType().getName() + "_");
+            }
+
             var map = Map.of(
                 "$EnclosingType$",     imports.add(attr.getEnclosingType().getName()),
                 "$ValueType$",         imports.add(attr.getValueType().getName()),
