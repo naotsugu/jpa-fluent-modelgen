@@ -16,7 +16,7 @@
 package com.mammb.code.jpa.fluent.modelgen.writer;
 
 import com.mammb.code.jpa.fluent.modelgen.JpaModelProcessor;
-import com.mammb.code.jpa.fluent.modelgen.ModelContext;
+import com.mammb.code.jpa.fluent.modelgen.context.ModelContext;
 
 import javax.tools.FileObject;
 import java.io.PrintWriter;

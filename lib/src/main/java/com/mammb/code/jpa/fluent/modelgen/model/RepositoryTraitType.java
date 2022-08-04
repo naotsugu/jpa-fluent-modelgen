@@ -15,7 +15,7 @@
  */
 package com.mammb.code.jpa.fluent.modelgen.model;
 
-import com.mammb.code.jpa.fluent.modelgen.ModelContext;
+import com.mammb.code.jpa.fluent.modelgen.context.ModelContext;
 import com.mammb.code.jpa.fluent.modelgen.writer.ApiClassWriter;
 import com.mammb.code.jpa.fluent.modelgen.writer.ImportBuilder;
 
@@ -25,7 +25,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.util.SimpleAnnotationValueVisitor14;
 import javax.lang.model.util.SimpleAnnotationValueVisitor9;
 import java.util.Collection;
 import java.util.Collections;

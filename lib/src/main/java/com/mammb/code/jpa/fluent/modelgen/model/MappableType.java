@@ -15,7 +15,7 @@
  */
 package com.mammb.code.jpa.fluent.modelgen.model;
 
-import com.mammb.code.jpa.fluent.modelgen.Context;
+import com.mammb.code.jpa.fluent.modelgen.context.Context;
 import com.mammb.code.jpa.fluent.modelgen.writer.ApiClassWriter;
 
 import javax.lang.model.element.AnnotationMirror;

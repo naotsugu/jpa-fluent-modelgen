@@ -15,7 +15,7 @@
  */
 package com.mammb.code.jpa.fluent.modelgen.writer;
 
-import com.mammb.code.jpa.fluent.modelgen.Context;
+import com.mammb.code.jpa.fluent.modelgen.context.Context;
 import com.mammb.code.jpa.fluent.modelgen.JpaModelProcessor;
 import com.mammb.code.jpa.fluent.modelgen.model.MappableType;
 

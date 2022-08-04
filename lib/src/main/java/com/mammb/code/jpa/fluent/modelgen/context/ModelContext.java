@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.mammb.code.jpa.fluent.modelgen;
+package com.mammb.code.jpa.fluent.modelgen.context;
 
 import com.mammb.code.jpa.fluent.modelgen.model.RepositoryTraitType;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelEntity;
@@ -91,7 +91,7 @@ public class ModelContext extends Context {
      * Add the given metamodel as generated.
      * @param entity the {@link StaticMetamodelEntity}
      */
-    void addGenerated(StaticMetamodelEntity entity) {
+    public void addGenerated(StaticMetamodelEntity entity) {
         generatedModelClasses.add(entity);
     }
 
@@ -100,7 +100,7 @@ public class ModelContext extends Context {
      * Gets whether generatedModelClasses are present.
      * @return {@code true} if generated model classes are present.
      */
-    boolean hasGeneratedModel() {
+    public boolean hasGeneratedModel() {
         return !generatedModelClasses.isEmpty();
     }
 

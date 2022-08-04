@@ -15,6 +15,7 @@
  */
 package com.mammb.code.jpa.fluent.modelgen;
 
+import com.mammb.code.jpa.fluent.modelgen.context.ModelContext;
 import com.mammb.code.jpa.fluent.modelgen.model.RepositoryTraitType;
 import com.mammb.code.jpa.fluent.modelgen.model.StaticMetamodelEntity;
 import com.mammb.code.jpa.fluent.modelgen.writer.ApiClassWriter;
@@ -114,7 +115,7 @@ public class JpaModelProcessor extends AbstractProcessor {
      * Create the source class
      * @param entity {@link StaticMetamodelEntity}
      */
-    protected void createMetaModelClasses(final StaticMetamodelEntity entity) {
+    private void createMetaModelClasses(final StaticMetamodelEntity entity) {
 
         if (!entity.getTargetEntity().getPersistenceType().isEntity() &&
             !entity.getTargetEntity().getPersistenceType().isEmbeddable()) {

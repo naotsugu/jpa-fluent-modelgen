@@ -15,7 +15,7 @@
  */
 package com.mammb.code.jpa.fluent.modelgen.model;
 
-import com.mammb.code.jpa.fluent.modelgen.ModelContext;
+import com.mammb.code.jpa.fluent.modelgen.context.ModelContext;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.type.DeclaredType;
