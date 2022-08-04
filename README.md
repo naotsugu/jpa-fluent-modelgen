@@ -43,7 +43,7 @@ If you use `jakarta.persistence` API, do the following
 
 ```kotlin
 dependencies {
-  annotationProcessor("org.hibernate.orm:hibernate-jpamodelgen:6.0.0.Final")
+  annotationProcessor("org.hibernate.orm:hibernate-jpamodelgen:6.1.1.Final")
   annotationProcessor("com.mammb:jpa-fluent-modelgen:0.9.0")
 }
 ```

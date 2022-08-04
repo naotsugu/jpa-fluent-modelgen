@@ -24,6 +24,8 @@ import javax.tools.FileObject;
 import java.io.PrintWriter;
 import java.util.Objects;
 
+import static java.util.function.Predicate.not;
+
 /**
  * The repository class writer.
  * @author Naotsugu Kobayashi
@@ -78,7 +80,9 @@ public class RepositoryClassWriter {
             try (PrintWriter pw = new PrintWriter(fo.openOutputStream())) {
 
                 var extendsClause = String.join(", ", context.getRepositoryTraitTypes().stream()
-                    .map(trait -> trait.createExtendsClause(entity, imports)).toArray(String[]::new));
+                    .map(trait -> trait.createExtendsClause(entity, imports))
+                    .filter(not(String::isEmpty))
+                    .toArray(String[]::new));
 
                 var body = """
                     public interface %2$sRepository_ extends Repository<%1$s, %2$s, %2$sModel.Root_>{extends} {

@@ -94,10 +94,6 @@ public class RepositoryTraitType {
      */
     public String createExtendsClause(StaticMetamodelEntity entity, ImportBuilder imports) {
 
-        if (typeParameters.isEmpty()) {
-            return "";
-        }
-
         if (excludesEntityQualifiedNames(element)
             .contains(entity.getTargetEntityQualifiedName())) {
             return "";
@@ -115,7 +111,7 @@ public class RepositoryTraitType {
         } else if (typeParam.matches("<\\w+,\\s*\\w+>")) {
             return name + "<%1$s, %2$s>";
         } else if (typeParam.matches("<\\w+>")) {
-            return name + "<%2$s>";
+            return name + "<%2$sModel.Root_>";
         } else {
             return name + typeParametersString();
         }
