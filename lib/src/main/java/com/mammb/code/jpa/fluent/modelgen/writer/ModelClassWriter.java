@@ -102,6 +102,7 @@ public class ModelClassWriter {
         imports.add("jakarta.persistence.criteria.Predicate");
         imports.add("jakarta.persistence.criteria.Root");
         imports.add("jakarta.persistence.criteria.Join");
+        imports.add("jakarta.persistence.criteria.JoinType");
         imports.add("jakarta.persistence.criteria.Path");
         imports.add("jakarta.persistence.criteria.ListJoin");
         imports.add("jakarta.persistence.criteria.SetJoin");

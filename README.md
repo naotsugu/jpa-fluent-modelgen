@@ -5,7 +5,7 @@
 
 ## What is this
 
-A simple annotation processor library that enhances JPA static metamodel.
+A simple annotation processor that enhances JPA static metamodel.
 
 Using JPA static metamodel, the code would look like this :
 
@@ -18,7 +18,6 @@ cb.equal(root.join(Customer_.organizations)
 ```
 
 At this time, the IDE's code completion cannot be utilized.
-
 
 
 With this library, you can write the following to take advantage of code completion.

@@ -74,6 +74,9 @@ public class JoinModelClassGenerator extends AttributeClassGenerator {
                 public $ValueType$Model.Join_ join$AttributeName$() {
                     return new $ValueType$Model.Join_(() -> get().join($EnclosingType$_.$attributeName$), query(), builder());
                 }
+                public $ValueType$Model.Join_ leftJoin$AttributeName$() {
+                    return new $ValueType$Model.Join_(() -> get().join($EnclosingType$_.$attributeName$, JoinType.LEFT), query(), builder());
+                }
                 public $ValueType$Model.Path_ get$AttributeName$() {
                     return new $ValueType$Model.Path_(() -> get().get($EnclosingType$_.$attributeName$), query(), builder());
                 }
@@ -94,6 +97,9 @@ public class JoinModelClassGenerator extends AttributeClassGenerator {
             sb.append(Template.of("""
                 public $ValueType$Model.Join_ join$AttributeName$() {
                     return new $ValueType$Model.Join_(() -> ((Join<?, $EnclosingType$>)(Join<?, ?>) get()).join($EnclosingType$_.$attributeName$), query(), builder());
+                }
+                public $ValueType$Model.Join_ leftJoin$AttributeName$() {
+                    return new $ValueType$Model.Join_(() -> ((Join<?, $EnclosingType$>)(Join<?, ?>) get()).join($EnclosingType$_.$attributeName$, JoinType.LEFT), query(), builder());
                 }
             """).bind(map));
         } else {
