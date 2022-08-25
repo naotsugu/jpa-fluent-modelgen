@@ -22,7 +22,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 
     testImplementation("jakarta.persistence:jakarta.persistence-api:3.0.0")
-    testAnnotationProcessor("org.hibernate.orm:hibernate-jpamodelgen:6.0.0.Final")
+    testAnnotationProcessor("org.hibernate.orm:hibernate-jpamodelgen:6.1.2.Final")
 
     testAnnotationProcessor(project(":lib", "archives"))
 }
