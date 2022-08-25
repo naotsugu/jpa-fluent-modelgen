@@ -70,7 +70,7 @@ public class JpaModelProcessor extends AbstractProcessor {
             Boolean.parseBoolean(env.getOptions().getOrDefault(JpaModelProcessor.ADD_REPOSITORY, "true")));
 
         var version = getClass().getPackage().getImplementationVersion();
-        context.logInfo("JPA Static-Metamodel Enhance Generator {}", (Objects.isNull(version) ? "" : version));
+        context.logInfo("JpaModelProcessor {}", (Objects.isNull(version) ? "" : version));
 
     }
 
@@ -123,7 +123,7 @@ public class JpaModelProcessor extends AbstractProcessor {
         }
 
         if (context.isAlreadyGenerated(entity.getQualifiedName())) {
-            context.logDebug("Skip meta model generation : {}", entity.getQualifiedName());
+            context.logDebug("Skip model generation : {}", entity.getQualifiedName());
             return;
         }
 
