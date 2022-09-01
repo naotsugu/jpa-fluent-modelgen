@@ -33,8 +33,8 @@ If you use `javax.persistence` API and Gradle Kotlin DSL, define annotation proc
 
 ```kotlin
 dependencies {
-  annotationProcessor("org.hibernate:hibernate-jpamodelgen:5.6.10.Final")
-  annotationProcessor("com.mammb:jpa-fluent-modelgen:0.9.0")
+  annotationProcessor("org.hibernate:hibernate-jpamodelgen:5.6.11.Final")
+  annotationProcessor("com.mammb:jpa-fluent-modelgen:0.10.0")
 }
 ```
 
@@ -43,7 +43,7 @@ If you use `jakarta.persistence` API, do the following
 ```kotlin
 dependencies {
   annotationProcessor("org.hibernate.orm:hibernate-jpamodelgen:6.1.2.Final")
-  annotationProcessor("com.mammb:jpa-fluent-modelgen:0.9.0")
+  annotationProcessor("com.mammb:jpa-fluent-modelgen:0.10.0")
 }
 ```
 

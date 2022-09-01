@@ -19,7 +19,7 @@ java {
 }
 
 dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
 
     testImplementation("jakarta.persistence:jakarta.persistence-api:3.0.0")
     testAnnotationProcessor("org.hibernate.orm:hibernate-jpamodelgen:6.1.2.Final")
@@ -32,7 +32,7 @@ tasks.named<Test>("test") {
 }
 
 group = "com.mammb"
-version = "0.9.0"
+version = "0.10.0"
 
 val sonatypeUsername: String? by project
 val sonatypePassword: String? by project
