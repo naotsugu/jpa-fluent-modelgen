@@ -129,7 +129,7 @@ public class Context {
      */
     private String formatted(String format, Object... args) {
         return Arrays.stream(args)
-            .map(arg -> Objects.nonNull(arg) ? arg.toString() : "")
+            .map(arg -> Objects.nonNull(arg) ? arg.toString().replace("$", "\\$") : "")
             .reduce(format, (str, arg) -> str.replaceFirst("\\{}", arg));
     }
 
